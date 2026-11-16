@@ -13,7 +13,7 @@ Mechanical: follow it top to bottom. What each gate proves is in `README.md`.
       that will never report. New gates go in as **steps inside that job** (this is how
       `npm run format:check` was added). A rename requires updating the branch-protection contexts
       in the GitHub UI first — owner-only, not an agent action.
-- [ ] No personal data anywhere: the diff, fixtures, commit messages and PR body contain no real name, phone number, amount, till, paybill or transaction code, **and no figure derived from the backup of any kind**: aggregates, counts, cell/row/month tallies, totals, deltas ("+20 in aggregate" is a violation). Measured figures live only in git-ignored `reference/`; describe results qualitatively ("sections unchanged", "ALL SECTIONS PASS"). No `.sms` file, `backups/` or `reference/` path in `git status`.
+- [ ] No personal data anywhere: the diff, fixtures, commit messages and PR body contain no real name, phone number, amount, till, paybill or transaction code, **and no figure derived from the backup of any kind**: aggregates, counts, cell/row/month tallies, totals, deltas ("+N in aggregate" is a violation). Measured figures live only in git-ignored `reference/`; describe results qualitatively ("sections unchanged", "ALL SECTIONS PASS"). No `.sms` file, `backups/` or `reference/` path in `git status`.
 
 ## DEPLOY: YES or NO in `.claude/handoff/review.md`
 
