@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { Analysis, ParseResult, Settings } from './lib/types';
 import { DEFAULT_SETTINGS } from './lib/types';
 import { analyze } from './lib/analyze';
@@ -60,7 +60,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [parse, setParse] = useState<ParseResult | null>(null);
   const [settings, setSettingsState] = useState<Settings>(loadSettings);
   const [loading, setLoading] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [fileError, setLoadError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
   const setSettings = useCallback((s: Settings) => {
@@ -102,10 +102,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLoadError(null);
   }, []);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- existing behaviour; restructure in a later task
-    if (analysisError) setLoadError('The file was read, but analysing it failed: ' + analysisError);
-  }, [analysisError]);
+  // One error selector: a file-loading error wins; otherwise surface an analysis failure with its prefix.
+  const loadError = fileError ?? (analysisError ? 'The file was read, but analysing it failed: ' + analysisError : null);
 
   const value = useMemo<AppState>(
     () => ({ parse, analysis, analysisError, settings, setSettings, loading, loadError, fileName, loadFile, reset }),

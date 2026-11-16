@@ -28,8 +28,9 @@ export default tseslint.config(
     },
   },
   {
-    // These files intentionally co-export helpers/context with components; splitting them is out of scope for TASK-1.
-    files: ['src/state.tsx', 'src/components/{DataTable,chart,ui}.tsx'],
+    // state.tsx genuinely co-locates the context object and its provider (consumers need both from one module).
+    // Every other module keeps non-component exports in a sibling file (csv.ts, chartUtils.ts, severity.ts).
+    files: ['src/state.tsx'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
   {

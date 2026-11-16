@@ -261,7 +261,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
 
   **Out of scope.** Visual-regression snapshots, cross-browser matrices, testing chart internals.
 
-- [ ] ## TASK-11 — Repay the TASK-1 lint debt and untrack `tsconfig.tsbuildinfo`
+- [x] ## TASK-11 — Repay the TASK-1 lint debt and untrack `tsconfig.tsbuildinfo`
       **Why:** TASK-1 shipped three scoped escape hatches and left a build artifact in git. Each is
       small and safe on its own; grouped here so they do not quietly become permanent.
 

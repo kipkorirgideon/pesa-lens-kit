@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useApp, useAnalysis } from '../state';
 import { COLORS, ksh, normName, num, pct, titleCase } from '../lib/format';
-import { ChartCard, Legend, PageTitle, Section, SEVERITY_TEXT, SeverityLabel } from '../components/ui';
-import { MoneyTooltip, axisProps, chartData } from '../components/chart';
+import { ChartCard, Legend, PageTitle, Section, SeverityLabel } from '../components/ui';
+import { SEVERITY_TEXT } from '../components/severity';
+import { MoneyTooltip } from '../components/chart';
+import { axisProps, chartData } from '../components/chartUtils';
 import { DataTable, type Column } from '../components/DataTable';
 import type { DrainBarRow, DrainPersonRow, Flag } from '../lib/types';
 

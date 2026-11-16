@@ -3,7 +3,8 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useAnalysis } from '../state';
 import { COLORS, dateLabel, hourLabel, ksh, num, pct, short } from '../lib/format';
 import { ChartCard, Legend, PageTitle, Section, Segmented, Takeaway } from '../components/ui';
-import { MoneyTooltip, axisProps, chartData, gridProps } from '../components/chart';
+import { MoneyTooltip } from '../components/chart';
+import { axisProps, chartData, gridProps } from '../components/chartUtils';
 import { DataTable, type Column } from '../components/DataTable';
 import type { BizDayTopRow, BizGridRow, BizPartRow, PayeeRow } from '../lib/types';
 

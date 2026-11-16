@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { DataTable, type Column } from './DataTable';
 import { Picker } from './Picker';
 import { ChartCard, Segmented, SeverityLabel } from './ui';
-import { chartData } from './chart';
+import { chartData } from './chartUtils';
 import Upload from '../pages/Upload';
 import { AppCtx, type AppState } from '../state';
 import { COLORS } from '../lib/format';

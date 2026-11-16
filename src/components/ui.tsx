@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Flag } from '../lib/types';
+import { SEVERITY_TEXT } from './severity';
 
 /** Text alternative for a chart: pre-formatted table cells plus a one-sentence summary. */
 export interface ChartData {
@@ -167,12 +168,6 @@ export function Segmented<V extends string>({
     </div>
   );
 }
-
-export const SEVERITY_TEXT: Record<Flag['severity'], string> = {
-  High: 'text-red-600',
-  Medium: 'text-amber-700',
-  Low: 'text-gray-500',
-};
 
 export function SeverityLabel({ severity }: { severity: Flag['severity'] }) {
   return <span className={`text-xs font-semibold uppercase tracking-wide ${SEVERITY_TEXT[severity]}`}>{severity}</span>;
