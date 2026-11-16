@@ -63,6 +63,15 @@ export const MSG = {
 
 // ---- extra raw-SMS variants (parse.ts coverage gaps) ----
 export const MSG_EXTRA = {
+  /** "at" with no parsable time after it: `recv` fails, `recv_alt` matches. */
+  recv_alt_truncated: 'QAB1CD2EH4 Confirmed. You have received Ksh1,500.00 from JANE ROE 0722***456 on 3/4/24 at',
+  cost_lowercase:
+    'QAB1CD2EH5 Confirmed. Ksh100.00 sent to JANE DOE 0712345678 on 16/11/26 at 6:42 AM. New M-PESA balance is Ksh300.00. transaction cost, Ksh7.00.',
+  cost_mixed_case:
+    'QAB1CD2EH6 Confirmed. Ksh100.00 sent to JANE DOE 0712345678 on 16/11/26 at 6:42 AM. New M-PESA balance is Ksh300.00. Transaction Cost, Ksh29.00.',
+  /** Parses as a till payment AND contains every failure keyword. */
+  till_with_failure_words:
+    'QAB1CD2EH7 Confirmed. Ksh120.00 paid to SAMPLE CAFE. on 16/11/26 at 3:20 PM.New M-PESA balance is Ksh80.00. Earlier: wrong PIN, insufficient funds, PIN is locked.',
   recv_business_no_digits:
     'QAB1CD2EH1 Confirmed.You have received Ksh2,000.00 from Hustler Fund on 26/9/26 at 8:04 AM New M-PESA balance is Ksh2,100.00.',
   send_person_bare_254:

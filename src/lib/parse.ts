@@ -71,7 +71,8 @@ export const RULES: [Rule, RegExp][] = [
 
 /** Python f(): strip commas and a trailing dot, then float. */
 const num = (s: string) => parseFloat(s.replace(/,/g, '').replace(/\.+$/, ''));
-const COST = /Transaction cost,? Ksh\.?\s?([\d,]+\.\d+)/; // case-sensitive, as in Python
+// Case-insensitive like BAL and every rule (rx): a body spelling it "Transaction Cost," must not lose its fee.
+const COST = /Transaction cost,? Ksh\.?\s?([\d,]+\.\d+)/i;
 const BAL = /New M-?PESA (?:account )?balance is Ksh\s?(-?[\d,]+\.\d+)/i;
 /** Sender ending in a full or masked phone => a person ("JOHN DOE 0727***224"). */
 const PHONE_TAIL = /^(.*?)\s+((?:0|\+?254)\d[\d*]{6,10})$/;
@@ -95,22 +96,21 @@ export function parseBackup(raw: { listSms: RawSms[] }): ParseResult {
     // Non-M-PESA senders are skipped entirely: no transaction rules and no counters.
     if (!isMpesaSender(m.adress)) continue;
     const rawBody = String(m.body ?? '');
-    // Counters on the raw body (non-transaction messages)
-    if (/insufficient|not have sufficient/i.test(rawBody)) insufficientFunds++;
-    if (/wrong PIN/i.test(rawBody)) wrongPin++;
-    if (/PIN is locked|account has been locked/i.test(rawBody)) pinLocked++;
-    if (rawBody.includes('KCB M-PESA loan request')) {
-      const k = rawBody.slice(0, 10); // dedupe by leading code
-      if (!kcbSeen.has(k)) {
-        kcbSeen.add(k);
-        kcbLoanRequestTs.push(m.time);
-      }
-    }
-
+    // Ordering (each step depends on the one before it):
+    //  1. Sender filter (above): a non-M-PESA message must reach neither rules, dedupe, nor counters.
+    //  2. Rule matching, on every M-PESA message. `matched` records whether ANY rule matched.
+    //  3. Dedupe, after field extraction (TASK-12: the key needs the final category). A duplicate still counts as
+    //     matched: it is a transaction we already hold, not a failure message, so it must not feed a counter.
+    //  4. Counters and the KCB loan-request set, only when no rule matched (SPEC: "from unmatched messages"). They used
+    //     to run before the rule loop on the raw body, which is why a message could both parse and increment one.
+    //     Because rule matching now happens first, `break` on a duplicate can no longer skip them wrongly: the counter
+    //     block is gated on `matched`, not on reaching the end of the loop body.
     const b = collapse(rawBody);
+    let matched = false;
     for (const [rule, re] of RULES) {
       const g = re.exec(b);
       if (!g) continue;
+      matched = true;
       const code = g[1].toUpperCase();
       const cm = COST.exec(b),
         bm = BAL.exec(b);
@@ -175,6 +175,17 @@ export function parseBackup(raw: { listSms: RawSms[] }): ParseResult {
       seen.add(key);
       txns.push(t);
       break;
+    }
+    if (matched) continue;
+    if (/insufficient|not have sufficient/i.test(rawBody)) insufficientFunds++;
+    if (/wrong PIN/i.test(rawBody)) wrongPin++;
+    if (/PIN is locked|account has been locked/i.test(rawBody)) pinLocked++;
+    if (rawBody.includes('KCB M-PESA loan request')) {
+      const k = rawBody.slice(0, 10); // dedupe by leading code
+      if (!kcbSeen.has(k)) {
+        kcbSeen.add(k);
+        kcbLoanRequestTs.push(m.time);
+      }
     }
   }
   return {

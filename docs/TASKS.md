@@ -310,7 +310,9 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
 
   **Out of scope.** Any other rule change, new categories, the sender filter (TASK-8).
 
-- [ ] ## TASK-13 — Parser robustness: case-insensitive transaction cost, counters only from unmatched messages
+  **Correction (2026-11-17, TASK-13).** The title's "unreachable" and the Why paragraph's strict-subset claim are wrong. Neither regex is a subset of the other: `recv_alt` is stricter at the head and looser at the tail. It is reachable in principle. Measured occurrences in the owner's backup are zero. The original text above is unchanged.
+
+- [x] ## TASK-13 — Parser robustness: case-insensitive transaction cost, counters only from unmatched messages
       **Why:** found while reviewing PR #2. (a) `COST` is the only regex in `parse.ts` built without
       the `i` flag, so a body spelling it `Transaction Cost,` silently yields `cost: 0` — verified
       locally. (b) SPEC says counters come "from unmatched messages", but they run on the raw body
