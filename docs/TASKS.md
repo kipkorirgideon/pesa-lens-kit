@@ -424,6 +424,20 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
     "Choose a file" opens the picker with Enter/Space, sort headers and the Picker work from the
     keyboard, and the "Skip to content" link appears on first Tab. With VoiceOver or NVDA, check that
     a chart is announced with its summary and that "View the data behind this chart" opens a table.
+  - **TASK-19 additions to that same pass (code-reasoned, not observed).** (a) In Chrome with
+    "Emulate vision deficiency: Achromatopsia" (or a greyscale OS filter), the red "Last 12 m", "Sent
+    last 12 m" and negative "Net" cells still read as flagged: each carries a small up or down
+    triangle after the value. With a screen reader, those cells announce ", up on prior 12 months" or
+    ", net outflow: sent more than received" after the amount (the text is Tailwind `sr-only`, which
+    clips rather than hides). (b) The stacked bar charts on Paybills & tills, Loans and Bars
+    show a striped second series and a dotted third series, and the Legend swatches carry the same
+    patterns; check the patterns render (SVG `url(#id)` fills) and stay legible at 400 px. (c) Tab to
+    the "Rank people by" and "Payee type" controls: one tab stop, Left/Right/Up/Down move and select
+    with wraparound, and focus stays on the newly selected option; screen readers should announce
+    "radio button, 2 of 3". (d) Heading outline (VoiceOver rotor or the browser accessibility tree) on
+    each tab has no skipped level. (e) Confirm each chart is a single stop for the accessibility tree
+    and that "View the data behind this chart (same numbers; works with a keyboard)" is the discoverable
+    keyboard path, since charts are deliberately not focusable.
   - If any violation appears, record the offending directive here and open a follow-up PR; do not
     loosen the CSP beyond the single directive that is actually required.
 
@@ -518,6 +532,13 @@ golden data will expose, so settle them *before* interpreting a verify failure a
   **Out of scope.** Import/export of settings, multi-profile support, any change to matching
   semantics (TASK-17 owns that).
 
+  **Status: BLOCKED on `main` — do not tick (recorded 2026-11-16).** This task targets
+  `src/lib/settings.ts`, `loadSettingsFrom` and a v2 storage key, none of which exist on `main`; they
+  live only in unmerged PR #5 (TASK-5). On `main` settings load through `loadSettings` in
+  `src/state.tsx` with the single `mpesa.settings.v1` key, and the "Reset to defaults ... defaults are
+  empty" criterion is false because `DEFAULT_SETTINGS` still carries `PROFILE.excludedPeople`. TASK-18
+  depends on TASK-5 landing (which is itself blocked on the local `npm run verify` run).
+
 ---
 
 ## Apex ruling on PR #6 (TASK-6) — recorded 2026-11-16
@@ -538,7 +559,7 @@ downloading charting code they do not render.
 
 ---
 
-- [ ] ## TASK-19 — Accessibility follow-ups deferred from TASK-7
+- [x] ## TASK-19 — Accessibility follow-ups deferred from TASK-7
       **Goal.** Close the gaps the TASK-7 audit found but did not fix.
 
   **Acceptance criteria.**
@@ -561,6 +582,28 @@ downloading charting code they do not render.
     re-activating the pressed button is a silent no-op. Make it a real radiogroup with roving
     `tabindex` and Left/Right/Up/Down handling, and assert the arrow-key behaviour in
     `a11y.test.tsx`.
+
+  **Outcome (PR for TASK-19).**
+  - Keyboard path: `accessibilityLayer` was measured, not guessed. It adds no code (the `DataTable`
+    chunk stayed at 391.18 kB / 108.58 kB gzip with it enabled on every chart, so the 500 kB budget does
+    not settle it), uses no eval or inline script (CSP-safe), but renders a focusable
+    `svg[role=application][tabindex=0]` nested inside the chart's `role="img"` wrapper, i.e. a focusable
+    descendant of an element whose children are presentational, and moves the tooltip, which in this
+    app is not an ARIA live region, so assistive tech gets nothing from it while keyboard users gain a
+    tab stop per chart. Decision: do not enable it; the data table is the keyboard path and the
+    "View the data behind this chart" summary now says so in the UI.
+    _Apex correction (PR #13 review):_ the nesting and the tab stop reproduce exactly as described, but
+    the live-region claim is true only because every chart passes `content={<MoneyTooltip/>}`. Recharts'
+    **default** tooltip (`recharts-default-tooltip`) does carry `role="status" aria-live="assertive"`,
+    so "the tooltip is not a live region" is a fact about our custom tooltip, not about the library.
+    The outcome stands — the table already satisfies WCAG 1.1.1 and the alternative needs a real
+    screen-reader pass no agent can run — but the restructure-and-enable path is recorded as TASK-23.
+  - `eslint-plugin-jsx-a11y` latest is 6.10.2 with peers `^3 || ... || ^9`; ESLint 10 is still
+    unsupported, so the `overrides` entry stays.
+  - Patterns were applied to series that share a stack (Loans, Paybills & tills, Bars). Left alone on
+    purpose: People (sent and received sit on opposite sides of zero and the legend says left/right),
+    Overview (Fuliza is below the zero line and the legend says so; money in/out are separate bars) and
+    Flags (grouped bars, not stacked).
 
   **Out of scope.** Dark mode, i18n, redesigning charts.
 
@@ -619,3 +662,43 @@ downloading charting code they do not render.
 
   **Out of scope.** Changing the handoff file format or field names, any `src/` change, anything to do
   with TASK-5 or SSO settings themselves.
+
+- [ ] ## TASK-23 — Residual colour-only cue on Loans, duplicate pattern ids on Payees _(Forge)_
+      **Why.** Recorded by Apex during the PR #13 (TASK-19) review; both were found, neither was in
+      TASK-19's acceptance criteria, so TASK-19 merged without them.
+
+  **Files.** `src/pages/Loans.tsx`, `src/pages/Payees.tsx`, `src/components/a11y.test.tsx`.
+
+  **Acceptance criteria.**
+  - The "Fuliza drawn" column in the Loans month-by-month table is `text-red-600` whenever
+    `r.fuliza > 0` and carries no second cue. Give it a `Cue` in the same style as Flags and People, so
+    the flagged cells survive greyscale and are announced. Pick wording that fits the meaning —
+    the cell flags "overdraft used this month", not "up on the prior period", so do not reuse
+    "up on prior 12 months". The glyph should not imply a direction it does not have.
+  - A test asserts the cue appears for `fuliza > 0` and is absent for `fuliza === 0`.
+  - `Payees` calls `useId()` once at page level and passes the same `pid` to `patternDefs` in both the
+    "By day" and "By hour" charts, so two `<pattern>` elements share one `id` in the document. Both
+    defs are identical today, so `url(#id)` still resolves correctly and nothing renders wrong — but
+    the duplicate ids are invalid HTML and break the moment the two charts' colours diverge. Give each
+    chart its own prefix (e.g. `` `${pid}-dow` `` / `` `${pid}-hour` ``; `patternId` already strips the
+    colons `useId` emits).
+  - A test asserts that rendering `Payees` produces no duplicate `id` among its `<pattern>` elements.
+
+  **Out of scope.** Re-opening the `accessibilityLayer` decision (that is TASK-24 below), any change
+  to the cues TASK-19 already shipped, any new dependency.
+
+- [ ] ## TASK-24 _(optional)_ — Re-examine Recharts `accessibilityLayer` with a restructured wrapper
+      **Why.** TASK-19 rejected `accessibilityLayer` on measured evidence (Apex reproduced it in PR #13:
+      `svg[role=application][tabindex=0]` nests inside the `role="img"` ChartCard wrapper, and our
+      custom `MoneyTooltip` has no live region, so a keyboard user gains a tab stop and hears nothing).
+      That is a verdict on the current structure, not on the feature. A working version is possible.
+
+  **Acceptance criteria (only if attempted).**
+  - The `role="img"` wrapper no longer contains a focusable descendant: either move the chart's
+    `aria-label` onto the `<svg>` itself, or drop `role="img"` on charts that opt into the layer.
+  - `MoneyTooltip` announces the focused point (`role="status"`, polite), matching the behaviour the
+    Recharts default tooltip already has.
+  - **Blocked on observation.** Ship only after the TASK-16 browser pass confirms the announcements
+    with a real screen reader. jsdom cannot settle this; do not tick it on code reasoning alone.
+
+  **Out of scope.** Enabling the layer without the wrapper change — that is the state TASK-19 rejected.

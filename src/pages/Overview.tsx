@@ -79,6 +79,7 @@ export default function Overview() {
       <Takeaway>{takeaway}</Takeaway>
 
       <ChartCard
+        headingLevel={2}
         title="Money in vs out, by month"
         subtitle={
           <Legend
@@ -123,6 +124,7 @@ export default function Overview() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ChartCard
+          headingLevel={2}
           title="Where the money went"
           subtitle={`All money out: ${ksh(outTotal)}`}
           height={Math.max(220, out.length * 30 + 20)}
@@ -139,6 +141,7 @@ export default function Overview() {
           </ResponsiveContainer>
         </ChartCard>
         <ChartCard
+          headingLevel={2}
           title="Payments by hour of day"
           subtitle={
             <>

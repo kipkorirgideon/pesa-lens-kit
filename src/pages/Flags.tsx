@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useApp, useAnalysis } from '../state';
 import { COLORS, ksh, normName, num, pct, titleCase } from '../lib/format';
-import { ChartCard, Legend, PageTitle, Section, SeverityLabel } from '../components/ui';
+import { ChartCard, Cue, Legend, PageTitle, Section, SeverityLabel } from '../components/ui';
 import { SEVERITY_TEXT } from '../components/severity';
 import { MoneyTooltip } from '../components/chart';
 import { axisProps, chartData } from '../components/chartUtils';
@@ -50,7 +50,12 @@ const barCols: Column<DrainBarRow>[] = [
     key: 'last_12m',
     header: 'Last 12 m',
     value: (r) => r.last_12m,
-    render: (r) => ksh(r.last_12m),
+    render: (r) => (
+      <>
+        {ksh(r.last_12m)}
+        {r.last_12m > r.prev_12m && <Cue glyph="▲" text="up on prior 12 months" />}
+      </>
+    ),
     align: 'right',
     cellClass: (r) => (r.last_12m > r.prev_12m ? 'text-red-600' : ''),
   },
@@ -93,7 +98,12 @@ export default function Flags() {
       key: 'sent_12m',
       header: 'Sent last 12 m',
       value: (r) => r.sent_12m,
-      render: (r) => ksh(r.sent_12m),
+      render: (r) => (
+        <>
+          {ksh(r.sent_12m)}
+          {r.sent_12m > r.sent_prev_12m && <Cue glyph="▲" text="up on prior 12 months" />}
+        </>
+      ),
       align: 'right',
       cellClass: (r) => (r.sent_12m > r.sent_prev_12m ? 'text-red-600' : ''),
     },

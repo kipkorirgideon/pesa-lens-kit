@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useAnalysis } from '../state';
 import { COLORS, dateLabel, hourLabel, ksh, num, pct, short } from '../lib/format';
+import { patternDefs, patternFill } from '../components/patterns';
 import { ChartCard, Legend, PageTitle, Section, Segmented, Takeaway } from '../components/ui';
 import { MoneyTooltip } from '../components/chart';
 import { axisProps, chartData, gridProps } from '../components/chartUtils';
@@ -108,6 +109,7 @@ function HeatMap({ grid }: { grid: BizGridRow[] }) {
 }
 
 export default function Payees() {
+  const pid = useId();
   const a = useAnalysis();
   const [filter, setFilter] = useState<Filter>('all');
   const ranked: Ranked[] = useMemo(
@@ -183,7 +185,7 @@ export default function Payees() {
           <Legend
             items={[
               { color: COLORS.blue, label: 'Paybill' },
-              { color: COLORS.orange, label: 'Till' },
+              { color: COLORS.orange, label: 'Till', pattern: 1 },
             ]}
           />
         }
@@ -196,12 +198,20 @@ export default function Payees() {
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={a.biz.dow} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
+                {patternDefs(pid, [COLORS.blue, COLORS.orange])}
                 <CartesianGrid {...gridProps} />
                 <XAxis dataKey="day" {...axisProps} />
                 <YAxis {...axisProps} tickFormatter={short} width={48} />
                 <Tooltip cursor={{ fill: '#f3f4f6' }} content={<MoneyTooltip totalLabel="Total" countKey="count" />} />
-                <Bar isAnimationActive={false} dataKey="paybill" name="Paybill" stackId="a" fill={COLORS.blue} />
-                <Bar isAnimationActive={false} dataKey="till" name="Till" stackId="a" fill={COLORS.orange} radius={[2, 2, 0, 0]} />
+                <Bar isAnimationActive={false} dataKey="paybill" name="Paybill" stackId="a" fill={patternFill(pid, 0, COLORS.blue)} />
+                <Bar
+                  isAnimationActive={false}
+                  dataKey="till"
+                  name="Till"
+                  stackId="a"
+                  fill={patternFill(pid, 1, COLORS.orange)}
+                  radius={[2, 2, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -212,6 +222,7 @@ export default function Payees() {
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={a.biz.hour} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
+                {patternDefs(pid, [COLORS.blue, COLORS.orange])}
                 <CartesianGrid {...gridProps} />
                 <XAxis dataKey="hour" {...axisProps} tickFormatter={(h: number) => String(h).padStart(2, '0')} interval={2} />
                 <YAxis {...axisProps} tickFormatter={short} width={48} />
@@ -225,8 +236,15 @@ export default function Payees() {
                     />
                   }
                 />
-                <Bar isAnimationActive={false} dataKey="paybill" name="Paybill" stackId="a" fill={COLORS.blue} />
-                <Bar isAnimationActive={false} dataKey="till" name="Till" stackId="a" fill={COLORS.orange} radius={[2, 2, 0, 0]} />
+                <Bar isAnimationActive={false} dataKey="paybill" name="Paybill" stackId="a" fill={patternFill(pid, 0, COLORS.blue)} />
+                <Bar
+                  isAnimationActive={false}
+                  dataKey="till"
+                  name="Till"
+                  stackId="a"
+                  fill={patternFill(pid, 1, COLORS.orange)}
+                  radius={[2, 2, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
