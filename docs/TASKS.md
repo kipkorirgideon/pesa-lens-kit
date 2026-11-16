@@ -90,7 +90,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Out of scope.** Snapshotting whole `Analysis` objects (brittle), testing React components,
   changing flag wording or thresholds.
 
-- [ ] ## TASK-4 — CI workflow and `vercel.json` security headers _(Harbor)_
+- [x] ## TASK-4 — CI workflow and `vercel.json` security headers _(Harbor)_
       **Goal.** Run the gates on every PR and lock the deployed app down with a strict CSP that makes
       "no network calls" enforceable rather than aspirational.
 
