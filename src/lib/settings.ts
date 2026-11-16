@@ -25,20 +25,31 @@ export function sanitizeSettings(raw: unknown): Settings {
 
 type Store = Pick<Storage, 'getItem' | 'setItem'>;
 
-/** Load v2 settings; if absent, migrate v1 (excludedPeople/extraBars kept, new fields empty) and write v2. v1 is left untouched. */
+/**
+ * Load v2 settings. If v2 is absent or unparseable, migrate v1 (excludedPeople/extraBars kept, new fields empty)
+ * and write the result to v2, overwriting any corrupt v2 value. v1 is left untouched.
+ */
 export function loadSettingsFrom(store: Store): Settings {
+  let v2: string | null = null;
   try {
-    const v2 = store.getItem(SETTINGS_KEY);
+    v2 = store.getItem(SETTINGS_KEY);
     if (v2) return sanitizeSettings(JSON.parse(v2));
-    const v1 = store.getItem(SETTINGS_KEY_V1);
-    if (v1) {
-      const migrated = sanitizeSettings(JSON.parse(v1));
-      saveSettingsTo(store, migrated);
-      return migrated;
-    }
   } catch {
-    /* corrupt or unavailable storage: fall through to defaults */
+    /* corrupt v2 (or unavailable storage): fall through to v1 */
   }
+  let result: Settings | null = null;
+  try {
+    const v1 = store.getItem(SETTINGS_KEY_V1);
+    if (v1) result = sanitizeSettings(JSON.parse(v1));
+  } catch {
+    /* corrupt v1: ignore */
+  }
+  if (result) {
+    saveSettingsTo(store, result);
+    return result;
+  }
+  // Corrupt v2 and nothing to migrate: replace the junk so it is not re-parsed on every load.
+  if (v2) saveSettingsTo(store, DEFAULT_SETTINGS);
   return DEFAULT_SETTINGS;
 }
 

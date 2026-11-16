@@ -63,15 +63,16 @@ export default function SettingsPage() {
 
       <Section
         title="Extra bars"
-        subtitle="Tag tills or paybills that are really bars or lounges but weren’t recognised by name. They’ll count as bars in Bars & restaurants and the drains list."
+        subtitle="Tills or paybills that are really bars or lounges but weren’t recognised by name. They’ll count as bars in Bars & restaurants and the drains list. Pick one, or type text: anything starting with it (any capitalisation) counts as a bar. Plain text only, no patterns."
       >
         <Picker
           selected={settings.extraBars}
           options={payeeOpts}
           onAdd={(v) => add('extraBars', v)}
           onRemove={(v) => remove('extraBars', v)}
-          placeholder="Search tills and paybills…"
+          placeholder="Search or type a venue name…"
           labelFor={(v) => v}
+          allowCustom
         />
       </Section>
 
@@ -104,7 +105,7 @@ export default function SettingsPage() {
           onClick={() => setSettings(DEFAULT_SETTINGS)}
           className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Reset to defaults
+          Clear all settings
         </button>
       </div>
     </div>
@@ -127,7 +128,8 @@ function MergeEditor({
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!can) return;
-    onChange([...merges, { match: match.trim(), name: name.trim() }]);
+    const m = { match: match.trim(), name: name.trim() };
+    if (!merges.some((x) => x.match === m.match && x.name === m.name)) onChange([...merges, m]);
     setMatch('');
     setName('');
   };

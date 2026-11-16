@@ -571,7 +571,7 @@ golden data will expose, so settle them *before* interpreting a verify failure a
   payee data proves prefix insufficient" wording in ruling (b) above: the data has now been looked at, one
   venue is affected, it remains fully expressible by its full name, and the answer is still no.
 
-- [ ] ## TASK-18 — Settings hardening nits from the PR #5 review (low priority)
+- [x] ## TASK-18 — Settings hardening nits from the PR #5 review (low priority)
       **Goal.** Three small, non-blocking issues Apex noted while reviewing PR #5. One PR, no
       behaviour change to the classifier.
 
@@ -853,7 +853,7 @@ downloading charting code they do not render.
   other mismatch still fails, and an allow-listed cell that no longer differs fails as stale. `npm run
   verify` prints ALL SECTIONS PASS. Provenance in `docs/PARSER_NOTES.md` "Baseline provenance".
 
-- [ ] ## TASK-31 — Make `extraBars` prefix matching reachable from Settings _(Forge)_
+- [x] ## TASK-31 — Make `extraBars` prefix matching reachable from Settings _(Forge)_
       **Why.** Found in the PR #22 (TASK-17) review. `extraBars` now matches by case-insensitive,
       whitespace-collapsed prefix, but the "Extra bars" `Picker` in `src/pages/Settings.tsx` has no
       `allowCustom` (unlike "Extra food venues") and its subtitle does not say how matching works. A user

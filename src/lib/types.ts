@@ -65,7 +65,16 @@ export interface Settings {
   venueMerges: { match: string; name: string }[];
 }
 /** No personal defaults ship in the bundle; everything is user-entered and stored locally. */
-export const DEFAULT_SETTINGS: Settings = { excludedPeople: [], extraBars: [], extraFood: [], venueMerges: [] };
+export const DEFAULT_SETTINGS: Settings = deepFreeze({ excludedPeople: [], extraBars: [], extraFood: [], venueMerges: [] });
+
+/** Recursively freezes arrays/objects so a shared module-level constant can never be mutated by a caller. */
+function deepFreeze<T>(o: T): T {
+  if (o && typeof o === 'object' && !Object.isFrozen(o)) {
+    Object.freeze(o);
+    Object.values(o as Record<string, unknown>).forEach(deepFreeze);
+  }
+  return o;
+}
 
 export interface Summary {
   first: string;
