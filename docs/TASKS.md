@@ -39,7 +39,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Out of scope.** Writing the parser test suite (TASK-2), CI workflow (TASK-4), reformatting
   unrelated files beyond what Prettier does mechanically, changing any app behaviour.
 
-- [ ] ## TASK-2 — Parser unit tests from synthetic SMS fixtures
+- [x] ## TASK-2 — Parser unit tests from synthetic SMS fixtures
       **Goal.** Lock in `parseBackup()` behaviour with one synthetic message per rule plus dedupe and
       timezone coverage, so future parser edits are safe.
 
