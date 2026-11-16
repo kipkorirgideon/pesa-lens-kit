@@ -8,7 +8,7 @@ const DT = String.raw`on (\d{1,2}/\d{1,2}/\d{2,4}) at (\d{1,2}:\d{2}(?: ?[AP]M)?
 const CONF = String.raw`^(\w{10}) Confirmed\.`; // transaction code prefix
 const rx = (s: string) => new RegExp(s, 'i');
 
-/** Rule names follow the Python (dedupe key uses them); `recv`/`recv_alt` split later, `fuliza_repay2` maps to fuliza_repay. */
+/** Rule names follow the Python. They are NOT the dedupe key: `recv`/`recv_alt` split into recv_person/recv_business and `fuliza_repay2` maps to fuliza_repay, and dedupe is on the final category. */
 type Rule =
   | 'send_paybill'
   | 'send_person'
@@ -62,6 +62,10 @@ export const RULES: [Rule, RegExp][] = [
   ['mshwari_from', rx(String.raw`^(\w{10}) Confirmed\.? ?${A} transferred from M-Shwari`)],
   ['mshwari_to', rx(String.raw`^(\w{10}) Confirmed\.? ?${A} transferred to M-Shwari`)],
   ['hustler_repay', rx(`${CONF} You have sent ${A} to Hustler Fund`)],
+  // recv_alt is NOT dead code, although it looks like a subset of `recv`. The two differ at the tail: `recv` needs a
+  // parsable time (h:mm) after the date, recv_alt only needs the word "at" and ignores whatever follows (the time is
+  // never captured; `ts` comes from the SMS metadata). So it is reached by a "received" message whose time text is
+  // missing or malformed, e.g. truncated right after "at". Proven by the 'recv_alt' test in parse.test.ts.
   ['recv_alt', rx(String.raw`${CONF} You have received ${A} from (.+?) on (\d{1,2}/\d{1,2}/\d{2,4}) at`)],
 ];
 
@@ -108,9 +112,6 @@ export function parseBackup(raw: { listSms: RawSms[] }): ParseResult {
       const g = re.exec(b);
       if (!g) continue;
       const code = g[1].toUpperCase();
-      const key = rule + '|' + code;
-      if (seen.has(key)) break; // duplicate SMS: stop (first match wins, even if a duplicate)
-      seen.add(key);
       const cm = COST.exec(b),
         bm = BAL.exec(b);
       const t: Txn = {
@@ -162,6 +163,16 @@ export function parseBackup(raw: { listSms: RawSms[] }): ParseResult {
         default:
           t.amount = num(g[2]);
       }
+      // Dedupe by (category, code), per SPEC §Parsing rules. The category is only final here, after field
+      // extraction: `recv`/`recv_alt` become recv_person or recv_business depending on the sender text, and
+      // `fuliza_repay2` is rewritten to fuliza_repay. Keying on the rule name (as this once did) kept the old and new
+      // Fuliza-repayment wordings of one code as two Txns and double-counted money out. Building the Txn before the
+      // check is safe (pure, no side effects); `break` on a duplicate still stops rule matching, so a duplicate is
+      // never re-parsed by a later rule. Distinct categories sharing a code (a payment and its Fuliza draw) differ in
+      // `cat`, so they are both kept.
+      const key = t.cat + '|' + code;
+      if (seen.has(key)) break;
+      seen.add(key);
       txns.push(t);
       break;
     }
