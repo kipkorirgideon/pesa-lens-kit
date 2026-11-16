@@ -21,7 +21,13 @@ function chunkBudget(): Plugin {
   };
 }
 
+/**
+ * Browser floor (ADR-009). Must equal `browserslist` in package.json: that list feeds eslint-plugin-compat,
+ * this feeds esbuild. These are Vite 5's own defaults, stated explicitly so they are a decision.
+ */
+export const BUILD_TARGET = ['es2020', 'chrome87', 'edge88', 'firefox78', 'safari14'];
+
 export default defineConfig({
   plugins: [react(), chunkBudget()],
-  build: { chunkSizeWarningLimit: CHUNK_BUDGET_KB },
+  build: { target: BUILD_TARGET, chunkSizeWarningLimit: CHUNK_BUDGET_KB },
 });

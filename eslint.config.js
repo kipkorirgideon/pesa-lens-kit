@@ -4,6 +4,7 @@ import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
+import compat from 'eslint-plugin-compat';
 
 const BROWSER_GLOBALS = ['window', 'document', 'localStorage', 'sessionStorage', 'fetch', 'navigator', 'self'];
 
@@ -12,6 +13,22 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   { ...jsxA11y.flatConfigs.recommended, files: ['src/**/*.tsx'] },
+  // Browser-API compatibility against the `browserslist` in package.json (ADR-009). Source only: tests,
+  // scripts and configs run on Node.
+  { ...compat.configs['flat/recommended'], files: ['src/**/*.{ts,tsx}'] },
+  {
+    // compat checks APIs, not syntax. Regex lookbehind needs Safari 16.4, above our floor (ADR-009).
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[regex.pattern=/\\(\\?<[=!]/]',
+          message: 'Regex lookbehind is unsupported on Safari < 16.4 (ADR-009).',
+        },
+      ],
+    },
+  },
   {
     // Keyboard users must be able to focus a scrollable region to scroll it (WCAG 2.1.1). We only allow
     // tabIndex on role="region" (the labelled scroll containers for tables); the rule stays on elsewhere.

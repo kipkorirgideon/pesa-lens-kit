@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "postbuild": "tsx scripts/check-dist.ts dist",
     "preview": "vite preview",
     "verify": "tsx scripts/verify.ts",
     "typecheck": "tsc --noEmit -p .",
@@ -32,6 +33,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.6.2",
     "eslint": "^10.15.0",
+    "eslint-plugin-compat": "^7.0.2",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.8",
@@ -50,5 +52,12 @@
     "eslint-plugin-jsx-a11y": {
       "eslint": "$eslint"
     }
-  }
+  },
+  "browserslist": [
+    "chrome >= 87",
+    "edge >= 88",
+    "firefox >= 78",
+    "safari >= 14",
+    "ios_saf >= 14"
+  ]
 }
