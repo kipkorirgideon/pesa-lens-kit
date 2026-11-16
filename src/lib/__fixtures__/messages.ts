@@ -1,5 +1,6 @@
 // Synthetic SMS bodies. Every name, phone, code and amount here is invented.
-import type { RawSms } from '../types';
+import type { ParseResult, RawSms, Txn, TxnCat } from '../types';
+import { isoMinute } from '../time';
 
 /** 2026-11-16T09:00:00Z, i.e. 12:00 in Nairobi. Arbitrary fixed instant. */
 export const T0 = Date.UTC(2026, 10, 16, 9, 0, 0);
@@ -57,3 +58,34 @@ export const MSG = {
   kcb_loan_a_again: 'KCBREQ0001 Your KCB M-PESA loan request of Ksh1,000 has been received. Reminder.',
   kcb_loan_b: 'KCBREQ0002 Your KCB M-PESA loan request of Ksh2,000 has been received.',
 } as const;
+
+// ---- extra raw-SMS variants (parse.ts coverage gaps) ----
+export const MSG_EXTRA = {
+  recv_business_no_digits:
+    'QAB1CD2EH1 Confirmed.You have received Ksh2,000.00 from Hustler Fund on 26/9/26 at 8:04 AM New M-PESA balance is Ksh2,100.00.',
+  send_person_bare_254:
+    'QAB1CD2EH2 Confirmed. Ksh700.00 sent to JANE DOE 254712345678 on 16/11/26 at 6:42 AM. New M-PESA balance is Ksh300.00. Transaction cost, Ksh7.00.',
+  one_decimal_amount:
+    'QAB1CD2EH3 Confirmed. Ksh50.5 sent to Sample Bank Paybill for account 77 on 14/11/26 at 8:08 PM New M-PESA balance is Ksh200.50. Transaction cost, Ksh0.00.',
+  fuliza_trailing_dot:
+    'QAB1CD2EH4 Confirmed. Fuliza M-PESA amount is Ksh 120.. Access Fee charged Ksh 1.20. Total Fuliza M-PESA outstanding amount is Ksh 121.20 due on 16/12/26.',
+  negative_balance:
+    'QAB1CD2EH5 Confirmed. Ksh100.00 sent to JANE DOE 0712345678 on 16/11/26 at 6:42 AM. New M-PESA balance is Ksh-20.00. Transaction cost, Ksh0.00.',
+} as const;
+
+// ---- synthetic ParseResult builder (analysis tests) ----
+/** Epoch ms for a Nairobi wall-clock time (UTC+3, no DST). Month is 1-12. */
+export const nairobi = (y: number, mo: number, d: number, h = 12, mi = 0) => Date.UTC(y, mo - 1, d, h - 3, mi, 0);
+
+let seq = 0;
+/** Build a Txn with a unique invented code; `at` is epoch ms. */
+export function txn(cat: TxnCat, at: number, amount: number, extra: Partial<Txn> = {}): Txn {
+  const code = `ZZ${String(++seq).padStart(8, '0')}`;
+  return { code, cat, ts: at, iso: isoMinute(at), amount, cost: 0, balance: null, ...extra };
+}
+
+export const parseResult = (txns: Txn[], counters: Partial<ParseResult['counters']> = {}): ParseResult => ({
+  txns,
+  counters: { insufficientFunds: 0, wrongPin: 0, pinLocked: 0, kcbLoanRequests: 0, totalSms: txns.length, ...counters },
+  kcbLoanRequestTs: [],
+});

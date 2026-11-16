@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { collapse, parseBackup } from './parse';
-import { backup, MSG, sms, T0 } from './__fixtures__/messages';
+import { backup, MSG, MSG_EXTRA, sms, T0 } from './__fixtures__/messages';
 
 const one = (body: string) => {
   const r = parseBackup(backup(body));
@@ -206,5 +206,32 @@ describe('counters', () => {
     });
     expect(r.counters.kcbLoanRequests).toBe(2);
     expect(r.kcbLoanRequestTs).toEqual([T0, T0 + 2000]);
+  });
+});
+
+describe('parse coverage gaps (TASK-3)', () => {
+  it('5 recv_business sender with no trailing digits', () => {
+    const t = one(MSG_EXTRA.recv_business_no_digits);
+    expect(t).toMatchObject({ cat: 'recv_business', name: 'Hustler Fund', amount: 2000, balance: 2100 });
+    expect(t.phone).toBeUndefined();
+  });
+
+  it('2 send_person with a bare 254 phone (no plus)', () => {
+    expect(one(MSG_EXTRA.send_person_bare_254)).toMatchObject({
+      cat: 'send_person',
+      name: 'JANE DOE',
+      phone: '254712345678',
+      amount: 700,
+      cost: 7,
+    });
+  });
+
+  it('num(): one-decimal amount and Fuliza amount with a trailing dot', () => {
+    expect(one(MSG_EXTRA.one_decimal_amount)).toMatchObject({ cat: 'send_paybill', amount: 50.5 });
+    expect(one(MSG_EXTRA.fuliza_trailing_dot)).toMatchObject({ cat: 'fuliza_draw', amount: 120, fee: 1.2 });
+  });
+
+  it('parses a negative balance', () => {
+    expect(one(MSG_EXTRA.negative_balance).balance).toBe(-20);
   });
 });

@@ -65,7 +65,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Out of scope.** Testing `analyze.ts` (TASK-3), changing any parser regex or behaviour — if a test
   reveals a genuine bug, note it in the PR and open a follow-up task rather than fixing it here.
 
-- [ ] ## TASK-3 — Analysis, classification and settings unit tests
+- [x] ## TASK-3 — Analysis, classification and settings unit tests
       **Goal.** Cover the layer between the parser and the UI with a small synthetic backup, so Settings
       and flag logic can be changed in TASK-5 with confidence.
 
