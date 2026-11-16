@@ -1,13 +1,17 @@
 // Payee classification (port of reference/python/bars.py) and small shared helpers.
 import type { FbCategory } from './types';
 
-// Bars / lounges / clubs. "BAR" but not "MILK BAR" in either word order: the lookbehind rejects a BAR that
-// directly follows MILK, the lookahead keeps rejecting a BAR that is followed by MILK. Only the BAR keyword is
-// affected, so other bar words in the same name (e.g. WINES) still match. "LOUNGE" but not a barber's ("KINYOZI").
-const BAR = /(?<!\bMILK )\bBAR\b(?!.*MILK)|LOUNGE(?!.*KINYOZI)|\bPUB\b|WINES?\b|LIQUOR|SPIRITS|\bCLUB\b|GARDENS|ROOFTOP|RESORT/i;
+// Bars / lounges / clubs. "LOUNGE" but not a barber's ("KINYOZI"). These keywords are tested on the raw name.
+const BAR_OTHER = /LOUNGE(?!.*KINYOZI)|\bPUB\b|WINES?\b|LIQUOR|SPIRITS|\bCLUB\b|GARDENS|ROOFTOP|RESORT/i;
+// The BAR keyword, "but not MILK BAR in either word order". It is tested on the name with every "MILK BAR" reduced to
+// "MILK": a BAR belonging to a MILK BAR is no longer a keyword, while a later MILK still cancels it (the lookahead).
+// Deliberately no lookbehind: it is a SyntaxError for the whole script on Safari < 16.4.
+const BAR_WORD = /\bBAR\b(?!.*MILK)/i;
+const MILK_BAR = /\bMILK[\s-]+BAR\b/gi;
+const isBar = (n: string): boolean => BAR_OTHER.test(n) || BAR_WORD.test(n.replace(MILK_BAR, ' MILK '));
 // Restaurants, hotels, cafes, fast food.
 const FOOD =
-  /RESTAURANT|HOTEL|\bCAFE|CAFFE|KITCHEN|CATERER|\bFOODS?\b|PIZZA|\bKFC\b|CHICKEN|JAVA|GRILL|CHOMA|ROAST|EATERY|SNACK|MILK BAR|DOMINO|FOOD COURT|\bREST\b|FISH PALACE|BIG FISH|DINE/i;
+  /RESTAURANT|HOTEL|\bCAFE|CAFFE|KITCHEN|CATERER|\bFOODS?\b|PIZZA|\bKFC\b|CHICKEN|JAVA|GRILL|CHOMA|ROAST|EATERY|SNACK|MILK[\s-]+BAR|DOMINO|FOOD COURT|\bREST\b|FISH PALACE|BIG FISH|DINE/i;
 // Butcheries / fish mongers.
 const MEAT = /BUTCHER|MEAT POINT|FISH MONGER/i;
 // Never food/bars even if a keyword above matches (barbers, supermarkets, banks...).
@@ -32,7 +36,7 @@ export interface ClassifyConfig {
 export function classifyPayee(n: string, cfg: ClassifyConfig = {}): FbCategory | null {
   if (cfg.extraBars && cfg.extraBars.has(n.toUpperCase())) return 'Bars & lounges';
   if (NOT_FB.test(n)) return null;
-  if (BAR.test(n)) return 'Bars & lounges';
+  if (isBar(n)) return 'Bars & lounges';
   if (MEAT.test(n)) return 'Butcheries & nyama choma';
   if (FOOD.test(n) || (cfg.extraFood ?? []).some((t) => startsWithText(n, t))) return 'Restaurants, hotels & food';
   return null;

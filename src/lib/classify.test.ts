@@ -23,9 +23,13 @@ describe('classifyPayee', () => {
     expect(classifyPayee('SAMPLE MILK BAR')).toBe(FOOD);
     expect(classifyPayee('Demo Milk Bar')).toBe(FOOD);
     expect(classifyPayee('MILK BAR DEMO')).toBe(FOOD);
+    expect(classifyPayee('SAMPLE MILK  BAR')).toBe(FOOD); // double space
+    expect(classifyPayee('SAMPLE MILK-BAR')).toBe(FOOD);
     expect(classifyPayee('SAMPLE BAR')).toBe(BARS);
     expect(classifyPayee('DEMO MILKY WAY BAR')).toBe(BARS);
     expect(classifyPayee('SAMPLE MILK BAR WINES')).toBe(BARS); // another bar keyword still wins
+    expect(classifyPayee('SAMPLE MILK  BAR WINES')).toBe(BARS);
+    expect(classifyPayee('SAMPLE BAR MILK')).toBeNull(); // a later MILK still cancels BAR (unchanged)
   });
 
   it('LOUNGE is a bar but a KINYOZI lounge (barber) is nothing', () => {
