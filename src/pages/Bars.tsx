@@ -3,7 +3,8 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useAnalysis } from '../state';
 import { COLORS, dateLabel, hourLabel, ksh, monthLabel, monthShort, num, pct, short } from '../lib/format';
 import { ChartCard, Kpi, Legend, PageTitle, Section, Takeaway } from '../components/ui';
-import { MoneyTooltip, axisProps, chartData, gridProps } from '../components/chart';
+import { MoneyTooltip } from '../components/chart';
+import { axisProps, chartData, gridProps } from '../components/chartUtils';
 import { DataTable, type Column } from '../components/DataTable';
 import type { FbCatRow, FbNightRow, FbVenueRow } from '../lib/types';
 
@@ -60,8 +61,7 @@ function Stacked<T extends object>({
 }: {
   data: T[];
   xKey: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- recharts passes arbitrary tick values
-  tickFormatter?: (v: any) => string;
+  tickFormatter?: (v: string | number) => string;
   labelFormatter?: (l: string | number) => string;
   countKey?: string;
   interval?: number | 'preserveStartEnd';
@@ -145,12 +145,17 @@ export default function Bars() {
             xKey="hour"
             countKey="count"
             interval={2}
-            tickFormatter={(h: number) => String(h).padStart(2, '0')}
+            tickFormatter={(h) => String(h).padStart(2, '0')}
             labelFormatter={(l) => `${hourLabel(Number(l))}–${String(Number(l)).padStart(2, '0')}:59`}
           />
         </ChartCard>
         <ChartCard title="By month" height={240} data={chartData(fb.monthly, (r) => monthLabel(r.month), 'Month', seriesOf, 'months')}>
-          <Stacked data={fb.monthly} xKey="month" tickFormatter={monthShort} labelFormatter={(l) => monthLabel(String(l))} />
+          <Stacked
+            data={fb.monthly}
+            xKey="month"
+            tickFormatter={(m) => monthShort(String(m))}
+            labelFormatter={(l) => monthLabel(String(l))}
+          />
         </ChartCard>
       </div>
 
