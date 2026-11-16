@@ -285,7 +285,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Out of scope.** Broadening the lint rule set, adding new plugins, refactoring component APIs,
   touching `src/lib/*`.
 
-- [ ] ## TASK-12 — Dedupe by category (not rule name) and settle the unreachable `recv_alt` rule
+- [x] ## TASK-12 — Dedupe by category (not rule name) and settle the unreachable `recv_alt` rule
       **Why:** found while reviewing PR #2. SPEC §Parsing rules says "de-duplicate by (category, code)",
       but `parse.ts` keys `seen` on the **rule** name: `fuliza_repay2` keys separately from
       `fuliza_repay`, and `recv` separately from `recv_alt`. Verified locally: the old and new
@@ -512,6 +512,8 @@ golden data will expose, so settle them *before* interpreting a verify failure a
   old Vercel deployments after the PR #5 deployment is READY, so no served artefact carries the
   strings; (3) also rewrite git history (`git filter-repo`) and force-push, which invalidates every
   existing clone and PR reference. Only the repo owner can decide and perform (2) and (3).
+
+  **Resolution (2026-11-17, TASK-35).** PR #5 was merged as commit `b8ef4d5`. The ruling text above is unchanged.
 
 - [x] ## TASK-17 — Make `extraBars` prefix-matching, consistent with `extraFood` and `venueMerges`
       **Goal.** Remove the last asymmetry in settings matching: `extraFood` and `venueMerges` match by
@@ -915,3 +917,11 @@ downloading charting code they do not render.
     only, with no figures.
   - `npm run verify` prints the skipped non-M-PESA count on its own line after the headline, and the
     headline format is unchanged.
+
+- [ ] ## TASK-36 — Renumber `.claude/agents/apex.md` section 3 and keep one authoritative gate list _(Forge; agent definition)_
+  **Why.** Section 3 is numbered 1, 2, 3, 2, 3, 4, 5, 6. The second item "2." restates the pre-merge gate
+  re-check with a **weaker list than item 1's**: it omits `prettier --check` and `npm run verify`. A future
+  Apex could follow the weaker list and merge a parser change without the verify gate.
+  **Acceptance.** Renumber sequentially; collapse to a single gate list (lint `--max-warnings=0`, typecheck,
+  test, build, `prettier --check`, and `npm run verify` for parser/analysis changes) that both the review and
+  the pre-merge re-check refer to. No other behaviour change.

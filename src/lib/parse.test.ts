@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { collapse, isMpesaSender, parseBackup } from './parse';
+import { collapse, isMpesaSender, parseBackup, RULES } from './parse';
 import { backup, MSG, MSG_EXTRA, otherSms, sms, T0 } from './__fixtures__/messages';
 
 const one = (body: string) => {
@@ -183,9 +183,25 @@ describe('dedupe', () => {
     expect(r.txns[0].code).toBe(r.txns[1].code);
   });
 
+  it('the old and new Fuliza-repayment wordings of one code yield one Txn (dedupe by category, not rule)', () => {
+    const r = parseBackup(backup(MSG.fuliza_repay_old, MSG.fuliza_repay_partial));
+    expect(r.txns).toHaveLength(1);
+    expect(r.txns[0]).toMatchObject({ code: 'QAB1CD2EG3', cat: 'fuliza_repay' });
+    expect(parseBackup(backup(MSG.fuliza_repay_partial, MSG.fuliza_repay_old)).txns).toHaveLength(1);
+  });
+
   it('dedupes a recv_person repeated with different casing of the code', () => {
     const r = parseBackup(backup(MSG.recv_person, MSG.recv_person.replace('QAB1CD2EF7', 'qab1cd2ef7')));
     expect(r.txns).toHaveLength(1);
+  });
+});
+
+describe('recv_alt reachability', () => {
+  it('a received message with "at" but no parsable time is parsed by recv_alt, not recv', () => {
+    const body = 'QAB1CD2EH4 Confirmed. You have received Ksh1,500.00 from JANE ROE 0722***456 on 3/4/24 at';
+    expect(RULES.find(([n]) => n === 'recv')![1].test(body)).toBe(false);
+    expect(RULES.find(([n]) => n === 'recv_alt')![1].test(body)).toBe(true);
+    expect(one(body)).toMatchObject({ code: 'QAB1CD2EH4', cat: 'recv_person', amount: 1500, name: 'JANE ROE', phone: '0722***456' });
   });
 });
 
