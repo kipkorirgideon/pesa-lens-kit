@@ -3,7 +3,7 @@ import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Toolt
 import { useAnalysis } from '../state';
 import { COLORS, dateLabel, hourLabel, ksh, monthLabel, monthShort, num, short } from '../lib/format';
 import { ChartCard, Kpi, Legend, PageTitle, Section, Takeaway } from '../components/ui';
-import { MoneyTooltip, axisProps, gridProps } from '../components/chart';
+import { MoneyTooltip, axisProps, chartData, gridProps } from '../components/chart';
 import { DataTable, type Column } from '../components/DataTable';
 import type { CategoryRow } from '../lib/types';
 
@@ -89,6 +89,17 @@ export default function Overview() {
           />
         }
         height={300}
+        data={chartData(
+          a.monthly,
+          (r) => monthLabel(r.month),
+          'Month',
+          [
+            { name: 'Money in', get: (r) => r.money_in },
+            { name: 'Money out', get: (r) => r.money_out },
+            { name: 'Fuliza drawn', get: (r) => r.fuliza },
+          ],
+          'months',
+        )}
       >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={monthly} margin={{ top: 4, right: 4, left: -8, bottom: 0 }} barGap={0} stackOffset="sign">
@@ -110,12 +121,17 @@ export default function Overview() {
       </ChartCard>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <ChartCard title="Where the money went" subtitle={`All money out: ${ksh(outTotal)}`} height={Math.max(220, out.length * 30 + 20)}>
+        <ChartCard
+          title="Where the money went"
+          subtitle={`All money out: ${ksh(outTotal)}`}
+          height={Math.max(220, out.length * 30 + 20)}
+          data={chartData(out, (r) => r.category, 'Category', [{ name: 'Amount', get: (r) => r.amount }], 'money-out categories')}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={out} layout="vertical" margin={{ top: 0, right: 12, left: 0, bottom: 0 }}>
               <CartesianGrid stroke="#eef0f3" horizontal={false} />
               <XAxis type="number" {...axisProps} tickFormatter={short} />
-              <YAxis type="category" dataKey="category" {...axisProps} width={128} interval={0} tick={{ fontSize: 11, fill: '#374151' }} />
+              <YAxis type="category" dataKey="category" {...axisProps} width={136} interval={0} tick={{ fontSize: 12, fill: '#374151' }} />
               <Tooltip cursor={{ fill: '#f3f4f6' }} content={<MoneyTooltip countKey="count" countLabel="transactions" />} />
               <Bar isAnimationActive={false} dataKey="amount" name="Amount" fill={COLORS.orange} radius={[0, 2, 2, 0]} />
             </BarChart>
@@ -130,6 +146,7 @@ export default function Overview() {
             </>
           }
           height={260}
+          data={chartData(a.hours, (r) => hourLabel(r.hour), 'Hour', [{ name: 'Paid out', get: (r) => r.amount }], 'hours of the day')}
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={a.hours} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>

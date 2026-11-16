@@ -3,7 +3,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useAnalysis } from '../state';
 import { COLORS, dateLabel, hourLabel, ksh, num, pct, short } from '../lib/format';
 import { ChartCard, Legend, PageTitle, Section, Segmented, Takeaway } from '../components/ui';
-import { MoneyTooltip, axisProps, gridProps } from '../components/chart';
+import { MoneyTooltip, axisProps, chartData, gridProps } from '../components/chart';
 import { DataTable, type Column } from '../components/DataTable';
 import type { BizDayTopRow, BizGridRow, BizPartRow, PayeeRow } from '../lib/types';
 
@@ -39,6 +39,11 @@ const dayTopCols: Column<BizDayTopRow>[] = [
   { key: 'amount', header: 'Amount', value: (r) => r.amount, render: (r) => ksh(r.amount), align: 'right' },
 ];
 
+const paySeries = [
+  { name: 'Paybill', get: (r: { paybill: number }) => r.paybill },
+  { name: 'Till', get: (r: { till: number }) => r.till },
+];
+
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function HeatMap({ grid }: { grid: BizGridRow[] }) {
@@ -52,18 +57,27 @@ function HeatMap({ grid }: { grid: BizGridRow[] }) {
     return seen.length ? seen : DAYS;
   }, [grid]);
   const max = Math.max(1, ...grid.map((g) => g.total));
+  const peak = grid.reduce<BizGridRow | null>((b, g) => (g.total > (b?.total ?? 0) ? g : b), null);
+  const summary = peak
+    ? `Heat map of payments by weekday and hour. The busiest slot is ${peak.day} ${hourLabel(peak.hour)}, ${ksh(peak.total)} across ${num(peak.count)} payments. Weekday totals are in the chart above and time-of-day totals in the table below.`
+    : 'Heat map of payments by weekday and hour. There are no payments to show.';
   return (
     <div className="overflow-x-auto">
-      <div className="grid min-w-[560px] gap-[2px]" style={{ gridTemplateColumns: '2.25rem repeat(24, minmax(0, 1fr))' }}>
+      <div
+        role="img"
+        aria-label={summary}
+        className="grid min-w-[640px] gap-[2px]"
+        style={{ gridTemplateColumns: '2.25rem repeat(24, minmax(0, 1fr))' }}
+      >
         <div />
         {Array.from({ length: 24 }, (_, h) => (
-          <div key={h} className="text-center text-[10px] text-gray-500">
+          <div key={h} className="text-center text-xs text-gray-500">
             {h % 3 === 0 ? String(h).padStart(2, '0') : ''}
           </div>
         ))}
         {days.map((d) => (
           <div key={d} className="contents">
-            <div className="flex items-center text-[11px] text-gray-600">{d}</div>
+            <div className="flex items-center text-xs text-gray-600">{d}</div>
             {Array.from({ length: 24 }, (_, h) => {
               const c = byKey.get(`${d}|${h}`);
               const t = c?.total ?? 0;
@@ -81,7 +95,7 @@ function HeatMap({ grid }: { grid: BizGridRow[] }) {
           </div>
         ))}
       </div>
-      <div className="mt-2 flex items-center gap-2 text-[11px] text-gray-500">
+      <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
         Less
         {[0.1, 0.3, 0.55, 0.8, 1].map((o) => (
           <span key={o} className="inline-block h-2.5 w-2.5 rounded-[2px]" style={{ background: COLORS.blue, opacity: o }} />
@@ -174,7 +188,11 @@ export default function Payees() {
         }
       >
         <div className="grid gap-4 lg:grid-cols-2">
-          <ChartCard title="By day of the week" height={240}>
+          <ChartCard
+            title="By day of the week"
+            height={240}
+            data={chartData(a.biz.dow, (r) => r.day, 'Day', paySeries, 'days of the week')}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={a.biz.dow} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
                 <CartesianGrid {...gridProps} />
@@ -186,7 +204,11 @@ export default function Payees() {
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
-          <ChartCard title="By hour of the day" height={240}>
+          <ChartCard
+            title="By hour of the day"
+            height={240}
+            data={chartData(a.biz.hour, (r) => hourLabel(r.hour), 'Hour', paySeries, 'hours of the day')}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={a.biz.hour} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
                 <CartesianGrid {...gridProps} />

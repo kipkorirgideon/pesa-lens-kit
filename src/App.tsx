@@ -71,9 +71,27 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [pathname]);
   const loaded = !!analysis;
+  const mainRef = useRef<HTMLElement>(null);
+  const first = useRef(true);
+  useEffect(() => {
+    // Announce navigation: update the title and move focus to the content (not on first load).
+    const tab = TABS.find((t) => t.to === pathname);
+    document.title = tab ? `${tab.label} · M-PESA Money Flow` : 'M-PESA Money Flow';
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    mainRef.current?.focus({ preventScroll: true });
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-gray-900 focus:px-3 focus:py-2 focus:text-sm focus:text-white"
+      >
+        Skip to content
+      </a>
       <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 px-4 pb-1 pt-3 sm:px-6">
           <Link to={loaded ? '/overview' : '/'} className="text-base font-semibold tracking-tight">
@@ -96,7 +114,7 @@ export default function App() {
           </div>
         )}
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-6">
+      <main id="main" ref={mainRef} tabIndex={-1} className="mx-auto max-w-6xl outline-none px-4 py-5 sm:px-6 sm:py-6">
         <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/" element={<Upload />} />
@@ -117,7 +135,7 @@ export default function App() {
           </Routes>
         </Suspense>
       </main>
-      <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs text-gray-400 sm:px-6">
+      <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs text-gray-500 sm:px-6">
         Processed on this device only — nothing is uploaded.
       </footer>
     </div>

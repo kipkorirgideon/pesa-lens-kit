@@ -31,6 +31,8 @@ interface Props<T> {
   empty?: string;
   /** Re-number a "rank"-like column after sort? No — ranks stay as provided. */
   caption?: ReactNode;
+  /** Accessible name for the table; defaults to a phrase derived from `filename`. */
+  label?: string;
 }
 
 function csvCell(v: unknown): string {
@@ -64,7 +66,9 @@ export function DataTable<T>({
   toolbar,
   empty,
   caption,
+  label,
 }: Props<T>) {
+  const tableLabel = label ?? filename.replace(/^mpesa-/, '').replace(/-/g, ' ');
   const [q, setQ] = useState('');
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(initialSort ?? null);
 
@@ -123,11 +127,11 @@ export function DataTable<T>({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={searchPlaceholder ?? 'Search…'}
-            aria-label="Search table"
-            className="h-8 min-w-0 flex-1 basis-40 rounded-md border border-gray-300 px-2.5 text-sm outline-none focus:border-gray-500 sm:max-w-xs"
+            aria-label={searchPlaceholder?.replace(/…$/, '') ?? `Search ${tableLabel}`}
+            className="h-8 min-w-0 flex-1 basis-40 rounded-md border border-gray-300 px-2.5 text-sm sm:max-w-xs"
           />
         )}
-        <span className="ml-auto text-xs text-gray-500">
+        <span role="status" className="ml-auto text-xs text-gray-500">
           {shown.length === rows.length ? `${shown.length} rows` : `${shown.length} of ${rows.length}`}
         </span>
         <button
@@ -139,8 +143,14 @@ export function DataTable<T>({
         </button>
       </div>
       {caption && <div className="mb-2 text-xs text-gray-500">{caption}</div>}
-      <div className="overflow-auto rounded-md border border-gray-200" style={{ maxHeight }}>
-        <table className="w-full border-collapse text-sm tabular-nums">
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label={`${tableLabel} (scrollable)`}
+        className="overflow-auto rounded-md border border-gray-200"
+        style={{ maxHeight }}
+      >
+        <table aria-label={tableLabel} className="w-full border-collapse text-sm tabular-nums">
           <thead>
             <tr>
               {columns.map((c) => {
@@ -150,7 +160,7 @@ export function DataTable<T>({
                     key={c.key}
                     scope="col"
                     title={c.hint}
-                    aria-sort={active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : undefined}
+                    aria-sort={active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : c.sortable === false ? undefined : 'none'}
                     className={`sticky top-0 z-10 whitespace-nowrap border-b border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600 ${c.align === 'right' ? 'text-right' : 'text-left'}`}
                   >
                     {c.sortable === false ? (
@@ -162,7 +172,9 @@ export function DataTable<T>({
                         className={`inline-flex items-center gap-1 hover:text-gray-900 ${active ? 'text-gray-900' : ''}`}
                       >
                         {c.header}
-                        <span className="w-2 text-[10px] text-gray-400">{active ? (sort!.dir === 'asc' ? '▲' : '▼') : ''}</span>
+                        <span aria-hidden className="w-3 text-xs text-gray-500">
+                          {active ? (sort!.dir === 'asc' ? '▲' : '▼') : ''}
+                        </span>
                       </button>
                     )}
                   </th>

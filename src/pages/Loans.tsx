@@ -3,7 +3,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useAnalysis } from '../state';
 import { COLORS, dateLabel, ksh, monthLabel, monthShort, num, short } from '../lib/format';
 import { ChartCard, Kpi, Legend, PageTitle, Section, Takeaway } from '../components/ui';
-import { MoneyTooltip, axisProps, gridProps } from '../components/chart';
+import { MoneyTooltip, axisProps, chartData, gridProps } from '../components/chart';
 import { DataTable, type Column } from '../components/DataTable';
 import type { LoanMonthRow, LoanProductRow } from '../lib/types';
 
@@ -97,6 +97,17 @@ export default function Loans() {
           />
         }
         height={300}
+        data={chartData(
+          m,
+          (r) => monthLabel(r.month),
+          'Month',
+          [
+            { name: 'Fuliza drawn', get: (r) => r.fuliza },
+            { name: 'KCB repayments', get: (r) => r.kcb_repaid },
+            { name: 'Hustler borrowed', get: (r) => r.hustler_in },
+          ],
+          'months',
+        )}
       >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={m} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
