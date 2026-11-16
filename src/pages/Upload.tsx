@@ -14,7 +14,8 @@ export default function Upload() {
     if (await loadFile(f)) nav('/overview');
   };
   const onDrop = (e: DragEvent) => {
-    e.preventDefault(); setDrag(false);
+    e.preventDefault();
+    setDrag(false);
     void handle(e.dataTransfer.files?.[0]);
   };
 
@@ -23,16 +24,27 @@ export default function Upload() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">See where your M-PESA money goes</h1>
         <p className="mt-2 text-sm leading-relaxed text-gray-600">
-          Drop the SMS backup file exported by the <span className="font-medium">SMS Backup</span> app (a <code className="rounded bg-gray-100 px-1">.sms</code> or <code className="rounded bg-gray-100 px-1">.json</code> file).
-          The M-PESA messages are read and summarised right here.
+          Drop the SMS backup file exported by the <span className="font-medium">SMS Backup</span> app (a{' '}
+          <code className="rounded bg-gray-100 px-1">.sms</code> or <code className="rounded bg-gray-100 px-1">.json</code> file). The
+          M-PESA messages are read and summarised right here.
         </p>
       </div>
 
       <div
-        role="button" tabIndex={0} aria-busy={loading}
+        role="button"
+        tabIndex={0}
+        aria-busy={loading}
         onClick={() => input.current?.click()}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.current?.click(); } }}
-        onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            input.current?.click();
+          }
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDrag(true);
+        }}
         onDragLeave={() => setDrag(false)}
         onDrop={onDrop}
         className={`flex min-h-[200px] cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-4 py-8 text-center outline-none transition-colors focus-visible:border-gray-500 ${drag ? 'border-[#2f6fdb] bg-blue-50/40' : 'border-gray-300 hover:border-gray-400'}`}
@@ -44,13 +56,23 @@ export default function Upload() {
           </>
         ) : (
           <>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.6" aria-hidden><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.6" aria-hidden>
+              <path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
             <span className="text-sm font-medium text-gray-800">Drop your backup file here</span>
             <span className="text-xs text-gray-500">or tap to choose a file</span>
           </>
         )}
-        <input ref={input} type="file" accept=".sms,.json,application/json,text/plain" className="hidden"
-          onChange={(e) => { void handle(e.target.files?.[0]); e.target.value = ''; }} />
+        <input
+          ref={input}
+          type="file"
+          accept=".sms,.json,application/json,text/plain"
+          className="hidden"
+          onChange={(e) => {
+            void handle(e.target.files?.[0]);
+            e.target.value = '';
+          }}
+        />
       </div>
 
       {loadError && (
@@ -61,14 +83,32 @@ export default function Upload() {
 
       {analysis && !loading && (
         <div className="rounded-md border border-gray-200 px-3 py-2.5 text-sm text-gray-700">
-          Loaded <span className="font-medium">{fileName}</span>: {num(analysis.summary.transactions)} transactions, {dateLabel(analysis.summary.first)} – {dateLabel(analysis.summary.last)}.{' '}
-          <button type="button" onClick={() => nav('/overview')} className="font-medium text-[#2f6fdb] hover:underline">Open the dashboard →</button>
+          Loaded <span className="font-medium">{fileName}</span>: {num(analysis.summary.transactions)} transactions,{' '}
+          {dateLabel(analysis.summary.first)} – {dateLabel(analysis.summary.last)}.{' '}
+          <button type="button" onClick={() => nav('/overview')} className="font-medium text-[#2f6fdb] hover:underline">
+            Open the dashboard →
+          </button>
         </div>
       )}
 
       <div className="flex gap-2.5 rounded-md bg-gray-50 px-3 py-3 text-sm text-gray-600">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mt-0.5 shrink-0" aria-hidden><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></svg>
-        <p><span className="font-medium text-gray-800">Private by design.</span> Your file is processed on this device and never uploaded. Nothing is stored except your settings; reload the page and the data is gone.</p>
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="mt-0.5 shrink-0"
+          aria-hidden
+        >
+          <rect x="5" y="11" width="14" height="9" rx="2" />
+          <path d="M8 11V8a4 4 0 018 0v3" />
+        </svg>
+        <p>
+          <span className="font-medium text-gray-800">Private by design.</span> Your file is processed on this device and never uploaded.
+          Nothing is stored except your settings; reload the page and the data is gone.
+        </p>
       </div>
     </div>
   );

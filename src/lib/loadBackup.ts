@@ -5,7 +5,8 @@ import { parseBackup } from './parse';
 
 function friendly(err: unknown): Error {
   if (err instanceof BackupError) return err;
-  if (err instanceof SyntaxError) return new BackupError('This file could not be read as JSON. Choose the .sms / .json file exported by the SMS Backup app.');
+  if (err instanceof SyntaxError)
+    return new BackupError('This file could not be read as JSON. Choose the .sms / .json file exported by the SMS Backup app.');
   return new BackupError('Something went wrong while reading the file: ' + (err instanceof Error ? err.message : String(err)));
 }
 
@@ -13,7 +14,11 @@ function parseOnMainThread(text: string): Promise<ParseResult> {
   return new Promise((resolve, reject) => {
     // Yield a frame so the spinner can paint before the heavy work.
     setTimeout(() => {
-      try { resolve(parseBackup(validateBackup(JSON.parse(text)))); } catch (e) { reject(friendly(e)); }
+      try {
+        resolve(parseBackup(validateBackup(JSON.parse(text))));
+      } catch (e) {
+        reject(friendly(e));
+      }
     }, 30);
   });
 }
@@ -33,15 +38,20 @@ export async function loadBackupFile(file: File): Promise<ParseResult> {
   }
   return new Promise<ParseResult>((resolve, reject) => {
     let settled = false;
-    const done = () => { settled = true; worker.terminate(); };
+    const done = () => {
+      settled = true;
+      worker.terminate();
+    };
     worker.onmessage = (e: MessageEvent<{ ok: boolean; result?: ParseResult; error?: string }>) => {
       done();
       if (e.data.ok && e.data.result) resolve(e.data.result);
       else {
         const msg = e.data.error ?? 'Unknown error';
-        reject(/Unexpected token|JSON/i.test(msg) && !/listSms/.test(msg)
-          ? new BackupError('This file could not be read as JSON. Choose the .sms / .json file exported by the SMS Backup app.')
-          : new BackupError(msg));
+        reject(
+          /Unexpected token|JSON/i.test(msg) && !/listSms/.test(msg)
+            ? new BackupError('This file could not be read as JSON. Choose the .sms / .json file exported by the SMS Backup app.')
+            : new BackupError(msg),
+        );
       }
     };
     worker.onerror = (ev) => {

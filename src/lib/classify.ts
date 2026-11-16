@@ -5,7 +5,8 @@ import { PROFILE } from '../profile';
 // Bars / lounges / clubs. "BAR" but not "MILK BAR"; "LOUNGE" but not a barber's ("KINYOZI").
 const BAR = /\bBAR\b(?!.*MILK)|LOUNGE(?!.*KINYOZI)|\bPUB\b|WINES?\b|LIQUOR|SPIRITS|\bCLUB\b|GARDENS|ROOFTOP|RESORT/i;
 // Restaurants, hotels, cafes, fast food.
-const FOOD = /RESTAURANT|HOTEL|\bCAFE|CAFFE|KITCHEN|CATERER|\bFOODS?\b|PIZZA|\bKFC\b|CHICKEN|JAVA|GRILL|CHOMA|ROAST|EATERY|SNACK|MILK BAR|DOMINO|FOOD COURT|\bREST\b|FISH PALACE|BIG FISH|DINE/i;
+const FOOD =
+  /RESTAURANT|HOTEL|\bCAFE|CAFFE|KITCHEN|CATERER|\bFOODS?\b|PIZZA|\bKFC\b|CHICKEN|JAVA|GRILL|CHOMA|ROAST|EATERY|SNACK|MILK BAR|DOMINO|FOOD COURT|\bREST\b|FISH PALACE|BIG FISH|DINE/i;
 // Butcheries / fish mongers.
 const MEAT = /BUTCHER|MEAT POINT|FISH MONGER/i;
 // Never food/bars even if a keyword above matches (barbers, supermarkets, banks...).
@@ -44,8 +45,10 @@ export const CRB = /credit (reference|bureau)|CREDITINFO|METROPOL/i;
 /** Python round(): half-to-even at exact ties; `nd` decimals. */
 export function pyRound(x: number, nd = 0): number {
   if (!isFinite(x)) return x;
-  const s = 10 ** nd, y = x * s;
-  const f = Math.floor(y), d = y - f;
+  const s = 10 ** nd,
+    y = x * s;
+  const f = Math.floor(y),
+    d = y - f;
   let r: number;
   if (d === 0.5) r = f % 2 === 0 ? f : f + 1;
   else if (nd === 0) r = d < 0.5 ? f : f + 1;
@@ -56,7 +59,9 @@ export function pyRound(x: number, nd = 0): number {
 /** Thousands-separated integer, like Python f"{x:,.0f}". */
 export function intComma(x: number): string {
   const r = pyRound(x);
-  const s = Math.abs(r).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const s = Math.abs(r)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return (r < 0 ? '-' : '') + s;
 }
 export const ksh = (x: number) => `KSh ${intComma(x)}`;
@@ -70,7 +75,8 @@ export function kshShort(x: number): string {
 
 /** Python str.title(): upper-case a letter that follows a non-letter, lower-case the rest. */
 export function pyTitle(s: string): string {
-  let prevLetter = false, out = '';
+  let prevLetter = false,
+    out = '';
   for (const ch of s) {
     const isLetter = /\p{L}/u.test(ch);
     out += isLetter ? (prevLetter ? ch.toLowerCase() : ch.toUpperCase()) : ch;

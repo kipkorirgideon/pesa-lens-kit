@@ -20,8 +20,14 @@ const catCols: Column<FbCatRow>[] = [
   { key: 'venues', header: 'Venues', value: (r) => r.venues, render: (r) => num(r.venues), align: 'right' },
   { key: 'avg', header: 'Average', value: (r) => r.avg, render: (r) => ksh(r.avg), align: 'right' },
   { key: 'weekend_pct', header: 'Weekend', value: (r) => r.weekend_pct, render: (r) => pct(r.weekend_pct), align: 'right' },
-  { key: 'late_pct', header: 'After 10 PM', value: (r) => r.late_pct, render: (r) => pct(r.late_pct), align: 'right',
-    cellClass: (r) => (r.late_pct >= 40 ? 'text-red-600' : '') },
+  {
+    key: 'late_pct',
+    header: 'After 10 PM',
+    value: (r) => r.late_pct,
+    render: (r) => pct(r.late_pct),
+    align: 'right',
+    cellClass: (r) => (r.late_pct >= 40 ? 'text-red-600' : ''),
+  },
 ];
 const venueCols: Column<FbVenueRow>[] = [
   { key: 'rank', header: '#', value: (r) => r.rank, align: 'right' },
@@ -42,8 +48,21 @@ const nightCols: Column<FbNightRow>[] = [
   { key: 'venues', header: 'Venues', value: (r) => r.venues, wrap: true },
 ];
 
-function Stacked<T extends object>({ data, xKey, tickFormatter, labelFormatter, countKey, interval }: {
-  data: T[]; xKey: string; tickFormatter?: (v: any) => string; /* eslint-disable-line @typescript-eslint/no-explicit-any */ labelFormatter?: (l: string | number) => string; countKey?: string; interval?: number | 'preserveStartEnd';
+function Stacked<T extends object>({
+  data,
+  xKey,
+  tickFormatter,
+  labelFormatter,
+  countKey,
+  interval,
+}: {
+  data: T[];
+  xKey: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- recharts passes arbitrary tick values
+  tickFormatter?: (v: any) => string;
+  labelFormatter?: (l: string | number) => string;
+  countKey?: string;
+  interval?: number | 'preserveStartEnd';
 }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -51,9 +70,20 @@ function Stacked<T extends object>({ data, xKey, tickFormatter, labelFormatter, 
         <CartesianGrid {...gridProps} />
         <XAxis dataKey={xKey} {...axisProps} tickFormatter={tickFormatter} interval={interval} minTickGap={8} />
         <YAxis {...axisProps} tickFormatter={short} width={48} />
-        <Tooltip cursor={{ fill: '#f3f4f6' }} content={<MoneyTooltip totalLabel="Total" labelFormatter={labelFormatter} countKey={countKey} />} />
+        <Tooltip
+          cursor={{ fill: '#f3f4f6' }}
+          content={<MoneyTooltip totalLabel="Total" labelFormatter={labelFormatter} countKey={countKey} />}
+        />
         {SERIES.map((s, i) => (
-          <Bar isAnimationActive={false} key={s.key} dataKey={s.key} name={s.name} stackId="a" fill={s.color} radius={i === SERIES.length - 1 ? [2, 2, 0, 0] : undefined} />
+          <Bar
+            isAnimationActive={false}
+            key={s.key}
+            dataKey={s.key}
+            name={s.name}
+            stackId="a"
+            fill={s.color}
+            radius={i === SERIES.length - 1 ? [2, 2, 0, 0] : undefined}
+          />
         ))}
       </BarChart>
     </ResponsiveContainer>
@@ -68,7 +98,18 @@ export default function Bars() {
 
   return (
     <div className="space-y-6">
-      <PageTitle title="Bars & restaurants" subtitle={<>Food and drink paid by till or paybill. Missing a bar? <Link to="/settings" className="underline decoration-gray-300 underline-offset-2 hover:text-gray-800">Tag it in Settings</Link>.</>} />
+      <PageTitle
+        title="Bars & restaurants"
+        subtitle={
+          <>
+            Food and drink paid by till or paybill. Missing a bar?{' '}
+            <Link to="/settings" className="underline decoration-gray-300 underline-offset-2 hover:text-gray-800">
+              Tag it in Settings
+            </Link>
+            .
+          </>
+        }
+      />
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <Kpi label="Total food & drink" value={ksh(s.total)} sub={`${num(s.payments)} payments · ${num(s.venues)} venues`} />
         <Kpi label="Bars & lounges" value={ksh(s.bars)} tone={s.bars > 0 ? 'red' : 'default'} sub={`${num(s.bar_nights)} nights out`} />
@@ -92,9 +133,14 @@ export default function Bars() {
           <Stacked data={fb.dow} xKey="day" countKey="count" />
         </ChartCard>
         <ChartCard title="By hour" height={240}>
-          <Stacked data={fb.hour} xKey="hour" countKey="count" interval={2}
+          <Stacked
+            data={fb.hour}
+            xKey="hour"
+            countKey="count"
+            interval={2}
             tickFormatter={(h: number) => String(h).padStart(2, '0')}
-            labelFormatter={(l) => `${hourLabel(Number(l))}–${String(Number(l)).padStart(2, '0')}:59`} />
+            labelFormatter={(l) => `${hourLabel(Number(l))}–${String(Number(l)).padStart(2, '0')}:59`}
+          />
         </ChartCard>
         <ChartCard title="By month" height={240}>
           <Stacked data={fb.monthly} xKey="month" tickFormatter={monthShort} labelFormatter={(l) => monthLabel(String(l))} />
@@ -102,10 +148,24 @@ export default function Bars() {
       </div>
 
       <Section title="Top venues">
-        <DataTable rows={fb.venues} columns={venueCols} rowKey={(r) => r.venue + r.category} filename="mpesa-food-drink-venues" searchable searchPlaceholder="Search venues…" initialSort={{ key: 'rank', dir: 'asc' }} />
+        <DataTable
+          rows={fb.venues}
+          columns={venueCols}
+          rowKey={(r) => r.venue + r.category}
+          filename="mpesa-food-drink-venues"
+          searchable
+          searchPlaceholder="Search venues…"
+          initialSort={{ key: 'rank', dir: 'asc' }}
+        />
       </Section>
       <Section title="Biggest nights out">
-        <DataTable rows={fb.nights} columns={nightCols} rowKey={(r) => r.night} filename="mpesa-biggest-nights" initialSort={{ key: 'amount', dir: 'desc' }} />
+        <DataTable
+          rows={fb.nights}
+          columns={nightCols}
+          rowKey={(r) => r.night}
+          filename="mpesa-biggest-nights"
+          initialSort={{ key: 'amount', dir: 'desc' }}
+        />
       </Section>
     </div>
   );

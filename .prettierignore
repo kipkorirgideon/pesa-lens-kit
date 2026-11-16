@@ -1,0 +1,10 @@
+dist
+coverage
+node_modules
+backups
+reference
+package-lock.json
+tsconfig.tsbuildinfo
+*.sms
+*.md
+.claude
