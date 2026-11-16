@@ -607,7 +607,7 @@ downloading charting code they do not render.
 
   **Out of scope.** Dark mode, i18n, redesigning charts.
 
-- [ ] ## TASK-20 — Add `prettier --check` to CI _(Harbor)_
+- [x] ## TASK-20 — Add `prettier --check` to CI _(Harbor)_
       **Goal.** Close the gap between the five gates the project promises and the four CI enforces.
       `README.md` and `docs/RELEASE.md` list `npx prettier --check .` as a merge gate, but
       `.github/workflows/ci.yml` runs only lint, typecheck, test and build, so a formatting regression
