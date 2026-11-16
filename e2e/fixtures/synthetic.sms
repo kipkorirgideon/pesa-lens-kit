@@ -1,0 +1,249 @@
+{
+ "listSms": [
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0014E2E0 Confirmed.You have received Ksh30,000.00 from SAMPLE EMPLOYER LTD 123456  on 1/9/26 at 8:15 AM New M-PESA balance is Ksh10,157.00.",
+   "time": 1788239700000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0026E2E0 Confirmed. Ksh2,000.00 sent to Sample Power Paybill for account 5550001 on 2/9/26 at 6:08 PM New M-PESA balance is Ksh60,042.00. Transaction cost, Ksh15.00.",
+   "time": 1788361680000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0001E2E0 Confirmed. Ksh5,000.00 sent to BETH SAMPLE 0700000001 on 3/9/26 at 10:05 AM. New M-PESA balance is Ksh14,987.00. Transaction cost, Ksh13.00.",
+   "time": 1788419100000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0017E2E0 Confirmed. Ksh450.00 paid to SAMPLE CAFE. on 4/9/26 at 1:20 PM.New M-PESA balance is Ksh69,707.00. Transaction cost, Ksh0.00.",
+   "time": 1788517200000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0006E2E0 Confirmed. Ksh3,500.00 sent to CARL EXAMPLE 0700000002 on 5/9/26 at 9:05 PM. New M-PESA balance is Ksh-8,578.00. Transaction cost, Ksh13.00.",
+   "time": 1788631500000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0023E2E0 Confirmed. Ksh1,800.00 paid to DEMO LOUNGE. on 6/9/26 at 10:20 PM.New M-PESA balance is Ksh65,657.00. Transaction cost, Ksh0.00.",
+   "time": 1788722400000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0002E2E0 Confirmed. Ksh5,000.00 sent to BETH SAMPLE 0700000001 on 10/9/26 at 10:05 AM. New M-PESA balance is Ksh9,974.00. Transaction cost, Ksh13.00.",
+   "time": 1789023900000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0018E2E0 Confirmed. Ksh450.00 paid to SAMPLE CAFE. on 11/9/26 at 1:20 PM.New M-PESA balance is Ksh69,257.00. Transaction cost, Ksh0.00.",
+   "time": 1789122000000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0047E2E0 Confirmed. Ksh2,200.00 paid to DEMO LOUNGE. on 12/9/26 at 11:20 PM.New M-PESA balance is Ksh42,924.00. Transaction cost, Ksh0.00.",
+   "time": 1789244400000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0031E2E0 Confirmed.on 14/9/26 at 4:24 PMWithdraw Ksh2,000.00 from 000001 - Sample Agent Shop New M-PESA balance is Ksh52,153.00. Transaction cost, Ksh29.00.",
+   "time": 1789392240000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0033E2E0 confirmed.You bought Ksh50.00 of airtime on 16/9/26 at 3:20 PM. New M-PESA balance is Ksh50,074.00.",
+   "time": 1789561200000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0038E2E0 Confirmed. Ksh350.00 paid to SAMPLE CAFE. on 20/9/26 at 8:20 AM.New M-PESA balance is Ksh49,624.00. Transaction cost, Ksh0.00.",
+   "time": 1789881600000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0039E2E0 Confirmed. Ksh350.00 paid to SAMPLE CAFE. on 27/9/26 at 8:20 AM.New M-PESA balance is Ksh49,274.00. Transaction cost, Ksh0.00.",
+   "time": 1790486400000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0015E2E0 Confirmed.You have received Ksh30,000.00 from SAMPLE EMPLOYER LTD 123456  on 1/10/26 at 8:15 AM New M-PESA balance is Ksh40,157.00.",
+   "time": 1790831700000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0045E2E0 Confirmed. Ksh1,200.00 paid to SAMPLE GROCER. on 1/10/26 at 5:20 PM.New M-PESA balance is Ksh46,324.00. Transaction cost, Ksh0.00.",
+   "time": 1790864400000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0027E2E0 Confirmed. Ksh2,000.00 sent to Sample Power Paybill for account 5550001 on 2/10/26 at 6:08 PM New M-PESA balance is Ksh58,027.00. Transaction cost, Ksh15.00.",
+   "time": 1790953680000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0029E2E0 Confirmed. Ksh900.00 sent to Sample Water Paybill for account 5550002 on 3/10/26 at 6:08 PM New M-PESA balance is Ksh55,097.00. Transaction cost, Ksh15.00.",
+   "time": 1791040080000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0040E2E0 Confirmed. Ksh350.00 paid to SAMPLE CAFE. on 6/10/26 at 8:20 AM.New M-PESA balance is Ksh48,924.00. Transaction cost, Ksh0.00.",
+   "time": 1791264000000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0011E2E0 Confirmed. Ksh1,000.00 sent to DINA DEMO 0700000003 on 6/10/26 at 10:05 AM. New M-PESA balance is Ksh-19,630.00. Transaction cost, Ksh13.00.",
+   "time": 1791270300000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0036E2E0 Confirmed. Fuliza M-PESA amount is Ksh 300.00. Access Fee charged Ksh 3.00. Total Fuliza M-PESA outstanding amount is Ksh 303.00 due on 9/11/26.",
+   "time": 1791536400000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0037E2E0 Confirmed. Ksh 303.00 from your M-PESA has been used to fully pay your outstanding Fuliza M-PESA.",
+   "time": 1791622800000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0007E2E0 Confirmed. Ksh3,500.00 sent to CARL EXAMPLE 0700000002 on 12/10/26 at 9:05 PM. New M-PESA balance is Ksh-12,091.00. Transaction cost, Ksh13.00.",
+   "time": 1791828300000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0024E2E0 Confirmed. Ksh1,800.00 paid to DEMO LOUNGE. on 13/10/26 at 10:20 PM.New M-PESA balance is Ksh63,857.00. Transaction cost, Ksh0.00.",
+   "time": 1791919200000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0034E2E0 confirmed.You bought Ksh50.00 of airtime on 16/10/26 at 3:20 PM. New M-PESA balance is Ksh50,024.00.",
+   "time": 1792153200000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0003E2E0 Confirmed. Ksh5,000.00 sent to BETH SAMPLE 0700000001 on 17/10/26 at 10:05 AM. New M-PESA balance is Ksh4,961.00. Transaction cost, Ksh13.00.",
+   "time": 1792220700000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0019E2E0 Confirmed. Ksh450.00 paid to SAMPLE CAFE. on 18/10/26 at 1:20 PM.New M-PESA balance is Ksh68,807.00. Transaction cost, Ksh0.00.",
+   "time": 1792318800000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0008E2E0 Confirmed. Ksh3,500.00 sent to CARL EXAMPLE 0700000002 on 19/10/26 at 9:05 PM. New M-PESA balance is Ksh-15,604.00. Transaction cost, Ksh13.00.",
+   "time": 1792433100000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0010E2E0 Confirmed.You have received Ksh500.00 from CARL EXAMPLE 0700***002 on 20/10/26 at 9:15 AM New M-PESA balance is Ksh-18,617.00.",
+   "time": 1792476900000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0032E2E0 Confirmed.on 21/10/26 at 4:24 PMWithdraw Ksh2,000.00 from 000001 - Sample Agent Shop New M-PESA balance is Ksh50,124.00. Transaction cost, Ksh29.00.",
+   "time": 1792589040000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0041E2E0 Confirmed. Ksh350.00 paid to SAMPLE CAFE. on 22/10/26 at 8:20 AM.New M-PESA balance is Ksh48,574.00. Transaction cost, Ksh0.00.",
+   "time": 1792646400000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0004E2E0 Confirmed. Ksh5,000.00 sent to BETH SAMPLE 0700000001 on 24/10/26 at 10:05 AM. New M-PESA balance is Ksh-52.00. Transaction cost, Ksh13.00.",
+   "time": 1792825500000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0020E2E0 Confirmed. Ksh450.00 paid to SAMPLE CAFE. on 25/10/26 at 1:20 PM.New M-PESA balance is Ksh68,357.00. Transaction cost, Ksh0.00.",
+   "time": 1792923600000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0048E2E0 Confirmed. Ksh2,200.00 paid to DEMO LOUNGE. on 26/10/26 at 11:20 PM.New M-PESA balance is Ksh40,724.00. Transaction cost, Ksh0.00.",
+   "time": 1793046000000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0042E2E0 Confirmed. Ksh350.00 paid to SAMPLE CAFE. on 29/10/26 at 8:20 AM.New M-PESA balance is Ksh48,224.00. Transaction cost, Ksh0.00.",
+   "time": 1793251200000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0016E2E0 Confirmed.You have received Ksh30,000.00 from SAMPLE EMPLOYER LTD 123456  on 1/11/26 at 8:15 AM New M-PESA balance is Ksh70,157.00.",
+   "time": 1793510100000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0028E2E0 Confirmed. Ksh2,000.00 sent to Sample Power Paybill for account 5550001 on 2/11/26 at 6:08 PM New M-PESA balance is Ksh56,012.00. Transaction cost, Ksh15.00.",
+   "time": 1793632080000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0009E2E0 Confirmed. Ksh3,500.00 sent to CARL EXAMPLE 0700000002 on 2/11/26 at 9:05 PM. New M-PESA balance is Ksh-19,117.00. Transaction cost, Ksh13.00.",
+   "time": 1793642700000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0030E2E0 Confirmed. Ksh900.00 sent to Sample Water Paybill for account 5550002 on 3/11/26 at 6:08 PM New M-PESA balance is Ksh54,182.00. Transaction cost, Ksh15.00.",
+   "time": 1793718480000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0043E2E0 Confirmed. Ksh350.00 paid to SAMPLE CAFE. on 5/11/26 at 8:20 AM.New M-PESA balance is Ksh47,874.00. Transaction cost, Ksh0.00.",
+   "time": 1793856000000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0005E2E0 Confirmed. Ksh5,000.00 sent to BETH SAMPLE 0700000001 on 7/11/26 at 10:05 AM. New M-PESA balance is Ksh-5,065.00. Transaction cost, Ksh13.00.",
+   "time": 1794035100000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0012E2E0 Confirmed. Ksh1,000.00 sent to DINA DEMO 0700000003 on 8/11/26 at 10:05 AM. New M-PESA balance is Ksh-20,643.00. Transaction cost, Ksh13.00.",
+   "time": 1794121500000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0021E2E0 Confirmed. Ksh450.00 paid to SAMPLE CAFE. on 8/11/26 at 1:20 PM.New M-PESA balance is Ksh67,907.00. Transaction cost, Ksh0.00.",
+   "time": 1794133200000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0013E2E0 Confirmed.You have received Ksh800.00 from DINA DEMO 0700***003 on 9/11/26 at 9:15 AM New M-PESA balance is Ksh-19,843.00.",
+   "time": 1794204900000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0046E2E0 Confirmed. Ksh1,200.00 paid to SAMPLE GROCER. on 9/11/26 at 5:20 PM.New M-PESA balance is Ksh45,124.00. Transaction cost, Ksh0.00.",
+   "time": 1794234000000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0044E2E0 Confirmed. Ksh350.00 paid to SAMPLE CAFE. on 10/11/26 at 8:20 AM.New M-PESA balance is Ksh47,524.00. Transaction cost, Ksh0.00.",
+   "time": 1794288000000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0049E2E0 Confirmed. Ksh2,200.00 paid to DEMO LOUNGE. on 11/11/26 at 11:20 PM.New M-PESA balance is Ksh38,524.00. Transaction cost, Ksh0.00.",
+   "time": 1794428400000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0022E2E0 Confirmed. Ksh450.00 paid to SAMPLE CAFE. on 12/11/26 at 1:20 PM.New M-PESA balance is Ksh67,457.00. Transaction cost, Ksh0.00.",
+   "time": 1794478800000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0035E2E0 confirmed.You bought Ksh50.00 of airtime on 14/11/26 at 3:20 PM. New M-PESA balance is Ksh49,974.00.",
+   "time": 1794658800000
+  },
+  {
+   "adress": "TESTSENDER",
+   "body": "ZZ0025E2E0 Confirmed. Ksh1,800.00 paid to DEMO LOUNGE. on 15/11/26 at 10:20 PM.New M-PESA balance is Ksh62,057.00. Transaction cost, Ksh0.00.",
+   "time": 1794770400000
+  }
+ ]
+}

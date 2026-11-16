@@ -12,3 +12,9 @@ coverage/
 docs/DEPLOYS.md
 .claude/handoff/
 tsconfig.tsbuildinfo
+
+# Synthetic E2E fixture (invented data only) is the one .sms allowed in git
+!e2e/fixtures/synthetic.sms
+test-results/
+playwright-report/
+.playwright/

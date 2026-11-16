@@ -244,7 +244,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Out of scope.** CHANGELOG automation, versioning/tagging scheme, screenshots containing real data
   (never).
 
-- [ ] ## TASK-10 _(optional)_ — Playwright end-to-end check of the Settings flows
+- [x] ## TASK-10 _(optional)_ — Playwright end-to-end check of the Settings flows
       **Goal.** One smoke journey against a synthetic backup: upload → Overview renders → exclude a
       person in Settings → that person disappears from the drains list → reload keeps the setting.
 
@@ -260,6 +260,14 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
     origin during the journey.
 
   **Out of scope.** Visual-regression snapshots, cross-browser matrices, testing chart internals.
+
+  **Done (Forge).** `npm run e2e` = `npm run build && playwright test`; the preview server is started
+  and stopped by Playwright's `webServer`. Locally on macOS 13 (which Playwright 1.65 no longer ships
+  Chromium for) run `PW_CHANNEL=chrome npm run e2e` to use installed Google Chrome; CI uses Playwright's
+  Chromium. CI runs it as a separate, non-required job `e2e (playwright)`; the required job name is
+  untouched. The privacy test is proven non-vacuous: a temporary `fetch('https://example.com/...')` in
+  `main.tsx` turned the journey and route tests red, and removing it turned them green.
+  **Known failure the E2E found:** see TASK-26 (`test.fail()` in the 400 px test).
 
 - [x] ## TASK-11 — Repay the TASK-1 lint debt and untrack `tsconfig.tsbuildinfo`
       **Why:** TASK-1 shipped three scoped escape hatches and left a build artifact in git. Each is
@@ -415,6 +423,15 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
     (~390 kB, Recharts) has loaded. With the network throttled to Fast 3G, switch tabs and check the
     Suspense fallback: nothing for ~200 ms, then a "Loading…" line, no header/tab-bar movement and no
     footer jump. Repeat one tab switch on a fast connection to confirm the fallback does not flash.
+  - **Covered by the TASK-10 E2E (added by Forge; the human pass still owns the rest, this box stays
+    unticked).** Headless Chrome against `vite preview` now asserts: all seven routes render and their
+    lazy chunks load with no `console.error` / `pageerror`; zero requests leave the origin during the
+    journey; the "Rank people by" Segmented control moves checked state and focus with ArrowRight /
+    ArrowLeft; and horizontal page overflow at 400 x 800 (this found a real defect, TASK-26). **Not
+    covered, and not provable this way:** screen-reader announcements, how colours or patterns look,
+    focus-ring visibility, and the production CSP. `vite preview` does not serve `vercel.json`'s
+    headers, so "a chunk loaded" says nothing about whether the shipped CSP allows it; items (f)(g)(h)
+    and the deployed-header checks remain open.
   - **Accessibility pass at 400 px (added by TASK-7, which had no browser).** The TASK-7 PR reasons
     about layout from the CSS and tests roles in jsdom, but nobody has looked at it. In a real
     browser at 400 x 800 on every tab, with a synthetic backup: confirm no horizontal page scroll
@@ -731,3 +748,41 @@ downloading charting code they do not render.
     with a real screen reader. jsdom cannot settle this; do not tick it on code reasoning alone.
 
   **Out of scope.** Enabling the layer without the wrapper change — that is the state TASK-19 rejected.
+
+---
+
+- [ ] ## TASK-25 — Remove the stale merge checkpoint from `apex.md` step 6 _(Forge)_
+      **Why.** `.claude/agents/apex.md` step 6 still offers
+      `"User: check the preview, then say go -> Apex: merge PR #<n>"`. That contradicts the unattended
+      loop in section 3 of the same file and CLAUDE.md's "never ask the user to approve a merge or a
+      deploy mid-task". The user has ruled "keep looping", so the line is stale.
+
+  **Files.** `.claude/agents/apex.md` only.
+
+  **Acceptance criteria.**
+  - The `User: check the preview ... Apex: merge PR #<n>` option is removed from step 6, and nothing
+    else in the file offers a mid-task user checkpoint.
+  - A grep for `check the preview` across `.claude/` and `docs/` finds no remaining offer of it.
+  - Reviewed by Apex on its own, not bundled with other work.
+
+  **Out of scope.** Any other change to the Apex workflow.
+
+---
+
+- [ ] ## TASK-26 — Visually hidden cues widen the page at 400 px _(Forge; found by the TASK-10 E2E)_
+      **Why.** A real browser at 400 x 800 shows horizontal page scroll on Red flags & drains (document
+      `scrollWidth` exceeds `clientWidth` by 495 px). Cause: the `sr-only` cue spans in table cells
+      (`Cue`, TASK-19) are `position: absolute`; their horizontal-scroll wrapper is not
+      `position: relative`, so they are positioned against an ancestor outside it, escape the
+      `overflow-x: auto` clip and widen the page. jsdom cannot see this. The mobile non-negotiable is
+      therefore currently violated on that tab (and on any other tab with a `Cue` in a wide table).
+
+  **Files.** likely `src/components/DataTable.tsx` (add `relative` to the scroll wrapper) and
+  `e2e/settings.spec.ts`.
+
+  **Acceptance criteria.**
+  - No tab has page-level horizontal overflow at 400 x 800.
+  - The `test.fail()` line is deleted from `no horizontal page scroll on any tab at 400x800` in
+    `e2e/settings.spec.ts` and that test passes.
+
+  **Out of scope.** Redesigning `Cue`.
