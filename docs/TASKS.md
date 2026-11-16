@@ -831,7 +831,7 @@ downloading charting code they do not render.
       **Why.** Mandated by Apex in the PR #5 review so the mechanism is on record and not re-framed as
       "`extraBars` became stricter" (it did not). Recorded in `docs/PARSER_NOTES.md` and TASK-17.
 
-- [ ] ## TASK-29 — Declare an explicit browser target _(Forge)_
+- [x] ## TASK-29 — Declare an explicit browser target _(Forge)_
       **Why.** Found in the PR #21 review: a regex lookbehind reached `main`-candidate code with nothing
       in the repo saying which engines must run it. No `browserslist`, no `build.target`, no statement in
       ARCHITECTURE.md, so the target is Vite's default `'modules'` (safari14), which this app's own code
@@ -845,6 +845,15 @@ downloading charting code they do not render.
   - An automated guard, not just prose: ESLint `plugin:compat` (or equivalent) wired into
     `npm run lint -- --max-warnings=0` so a future lookbehind fails the gate instead of shipping green.
   - A test or build-time check that `dist/assets/*.js` contains no `(?<` lookbehind.
+
+  **Done (TASK-29 PR).** See ADR-009. Floor kept at Vite's default (Chrome 87, Edge 88, Firefox 78,
+  Safari 14); `scripts/check-dist.ts` runs as `postbuild`.
+
+  **Floor deviation (recorded in review).** The task proposed iOS Safari >= 15.6. The PR deliberately kept
+  Vite 5's default floor (Chrome 87 / Edge 88 / Firefox 78 / Safari and iOS 14, ES2020) because raising it
+  drops iPhone 6s/7-class devices for no gain, the JS output is byte-identical either way, and lookbehind
+  needs Safari 16.4 so 15.6 would not have changed the ban that motivated the task. Apex endorsed the
+  lower floor.
 
 - [x] ## TASK-30 — Teach `verify` the approved MILK BAR delta _(Forge)_
       **Why.** TASK-14 intentionally moves 5 of 19 sections and the golden baseline is deliberately not
@@ -927,3 +936,25 @@ downloading charting code they do not render.
   **Acceptance.** Renumber sequentially; collapse to a single gate list (lint `--max-warnings=0`, typecheck,
   test, build, `prettier --check`, and `npm run verify` for parser/analysis changes) that both the review and
   the pre-merge re-check refer to. No other behaviour change.
+
+- [x] ## TASK-37 — Bar backup-derived figures from the diff, commits and PR body _(Forge; docs)_
+      **Why.** Found in the PR #28 review: the pre-merge privacy line caught literal personal data but not
+      derived aggregates, so a row-count delta against the golden reference passed it and should not have.
+
+  **Done (TASK-29 PR).** `docs/RELEASE.md` privacy line now bars aggregates, counts, tallies and totals
+  of any kind from the diff, fixtures, commit messages and PR body; measured figures live only in
+  git-ignored `reference/`.
+
+- [ ] ## TASK-38 — Close the browser-floor drift test blind spot _(Forge)_
+  **Why.** `src/lib/browserTarget.test.ts` only compares `chrome|edge|firefox|safari`, so a lone change to
+  `ios_saf >= 14` in `browserslist` would not fail it. esbuild has no iOS target to compare against, and
+  `es2020` has no second source either.
+  **Acceptance.** Either extend the test to cover `ios_saf` (e.g. assert it equals the Safari floor) and
+  the ES level, or document in the test and ADR-009 exactly what the test does not cover.
+
+- [ ] ## TASK-39 — Reconcile the declared Safari floor with flex `gap` support _(Forge; product decision for Apex)_
+  **Why.** Safari 14.0 does not support `gap` on flex containers (14.1 does), so Tailwind `gap-*`
+  utilities degrade to no spacing on 14.0. Pre-existing on `main`, not introduced by TASK-29, but it is a
+  gap between what the project now claims to support and what it renders.
+  **Acceptance.** Either raise the floor's Safari/iOS minimum to 14.1 (browserslist, `BUILD_TARGET`,
+  ADR-009, drift test) or accept and document the 14.0 degradation in ADR-009.

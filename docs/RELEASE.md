@@ -4,7 +4,7 @@ Mechanical: follow it top to bottom. What each gate proves is in `README.md`.
 
 ## Pre-merge (all must be true on the PR head)
 
-- [ ] `npm run lint -- --max-warnings=0`, `npm run typecheck`, `npm test -- --run`, `npm run build` (includes the 500 kB per-chunk budget) and `npx prettier --check .` are all green.
+- [ ] `npm run lint -- --max-warnings=0`, `npm run typecheck`, `npm test -- --run`, `npm run build` (includes the 500 kB per-chunk budget and the `postbuild` no-lookbehind check on `dist/`) and `npx prettier --check .` are all green.
 - [ ] If the PR touches `src/lib/parse.ts`, `analyze.ts`, `classify.ts` or `time.ts`: `npm run verify` printed `ALL SECTIONS PASS` on a machine that has `backups/sms.sms` and `reference/expected/`. If no such machine is available, the PR is **not mergeable**; do not approximate it.
 - [ ] Preview checked at 400 px wide: no horizontal page scroll (tables and the tab bar may scroll inside their own box), no clipped tiles.
 - [ ] **Never rename the CI job.** `main`'s required status check is the exact context
@@ -13,7 +13,7 @@ Mechanical: follow it top to bottom. What each gate proves is in `README.md`.
       that will never report. New gates go in as **steps inside that job** (this is how
       `npm run format:check` was added). A rename requires updating the branch-protection contexts
       in the GitHub UI first — owner-only, not an agent action.
-- [ ] No personal data anywhere: the diff, fixtures, commit messages and PR body contain no real name, phone number, amount, till, paybill or transaction code. No `.sms` file, `backups/` or `reference/` path in `git status`.
+- [ ] No personal data anywhere: the diff, fixtures, commit messages and PR body contain no real name, phone number, amount, till, paybill or transaction code, **and no figure derived from the backup of any kind**: aggregates, counts, cell/row/month tallies, totals, deltas ("+N in aggregate" is a violation). Measured figures live only in git-ignored `reference/`; describe results qualitatively ("sections unchanged", "ALL SECTIONS PASS"). No `.sms` file, `backups/` or `reference/` path in `git status`.
 
 ## DEPLOY: YES or NO in `.claude/handoff/review.md`
 

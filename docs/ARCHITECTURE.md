@@ -48,6 +48,26 @@ the whole list.
 - **ADR-007: Vitest over Jest.** Shares the Vite transform; no separate babel/ts-jest config.
 - **ADR-008: Web Worker with a main-thread fallback** rather than worker-only, so an environment
   without `Worker` (or where worker construction throws) still parses, just with a frozen frame.
+- **ADR-009: Explicit browser floor: Chrome 87, Edge 88, Firefox 78, Safari / iOS Safari 14, ES2020.**
+  _Incident:_ the first TASK-14 attempt used a regex lookbehind in `classify.ts`, which ships to the
+  browser. Safari < 16.4 cannot parse it, so it would have been a blank app on older iPhones. Every gate
+  passed (lint, typecheck, tests, build, prettier, both CI jobs) because Node and headless Chromium
+  both support lookbehind; the gates were structurally blind to browser compatibility. Apex caught it
+  in review only. _Decision:_ the floor is Vite 5's own default, now stated rather than implicit. We
+  keep it rather than raising it because the product's non-negotiable is working at 400 px, i.e. on
+  phones, possibly old ones (iOS 14 runs on iPhone 6s and later), raising the floor buys no feature
+  we use, and keeping it leaves the emitted bundle byte-identical. It is a floor, so raising it later
+  is a deliberate edit. Single source of truth: `browserslist` in `package.json` (read by
+  `eslint-plugin-compat`) and `BUILD_TARGET` in `vite.config.ts` (read by esbuild) must list the same
+  engines; `src/lib/browserTarget.test.ts` fails if they drift. _Rule:_ syntax or APIs newer than the
+  floor (regex lookbehind, `structuredClone`, `Object.hasOwn`, `Array.prototype.at`, ...) are banned in
+  `src/`. _Enforcement:_ (1) `eslint-plugin-compat` in `npm run lint` flags unsupported APIs and, as
+  verified, lookbehind; (2) a `no-restricted-syntax` rule flags lookbehind regex literals explicitly, so
+  the ban does not depend on plugin internals; (3) `scripts/check-dist.ts` runs as `postbuild` (so in
+  `npm run build`, CI and e2e) and fails if any emitted JS contains `(?<=` or `(?<!`. (3) is
+  defence-in-depth for what lint cannot see: a dependency shipping a lookbehind, or a `new RegExp`
+  built from a string. Named groups `(?<name>` are valid on the floor and are not flagged. Lint
+  does not run on `dist/` and the dist check does not know APIs, so neither subsumes the other.
 
 ---
 
@@ -55,7 +75,7 @@ the whole list.
 
 ```
 index.html                 Vite entry; no external scripts, styles or fonts
-vite.config.ts             React plugin only
+vite.config.ts             React plugin, chunk budget, explicit BUILD_TARGET (ADR-009)
 tailwind.config.js         content globs: index.html, src/**/*.{ts,tsx}
 tsconfig.json              strict, noEmit, includes src/ and scripts/
 scripts/
