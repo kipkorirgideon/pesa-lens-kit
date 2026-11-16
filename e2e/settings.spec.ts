@@ -65,7 +65,7 @@ test('settings journey: upload, exclude a person, persists across reload; nothin
   await expect(table.getByRole('cell', { name: 'Beth Sample' })).toHaveCount(0);
 
   // Reload: the analysis is gone by design (nothing but settings is stored), the setting is kept.
-  expect(await page.evaluate(() => localStorage.getItem('mpesa.settings.v1'))).toContain('BETH SAMPLE');
+  expect(await page.evaluate(() => localStorage.getItem('mpesa.settings.v2'))).toContain('BETH SAMPLE');
   await page.reload();
   await expect(page.getByText('Private by design.')).toBeVisible();
   await upload(page);

@@ -59,9 +59,13 @@ export interface Settings {
   excludedPeople: string[];
   /** Payee names (as shown in payee tables) the user has manually tagged as bars/lounges. */
   extraBars: string[];
+  /** Plain-text payee names/prefixes (case-insensitive) forced to Restaurants & food. Never a RegExp. */
+  extraFood: string[];
+  /** Merge several tills of one venue: a payee name starting with `match` (case-insensitive) is shown as `name`. Never a RegExp. */
+  venueMerges: { match: string; name: string }[];
 }
-import { PROFILE } from '../profile';
-export const DEFAULT_SETTINGS: Settings = { excludedPeople: [...PROFILE.excludedPeople], extraBars: [] };
+/** No personal defaults ship in the bundle; everything is user-entered and stored locally. */
+export const DEFAULT_SETTINGS: Settings = { excludedPeople: [], extraBars: [], extraFood: [], venueMerges: [] };
 
 export interface Summary {
   first: string;

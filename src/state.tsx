@@ -1,31 +1,22 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { Analysis, ParseResult, Settings } from './lib/types';
 import { DEFAULT_SETTINGS } from './lib/types';
+import { loadSettingsFrom, saveSettingsTo } from './lib/settings';
 import { analyze } from './lib/analyze';
 import { loadBackupFile } from './lib/loadBackup';
 
-const SETTINGS_KEY = 'mpesa.settings.v1';
-
 function loadSettings(): Settings {
   try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (!raw) return DEFAULT_SETTINGS;
-    const s = JSON.parse(raw) as Partial<Settings>;
-    return {
-      excludedPeople: Array.isArray(s.excludedPeople)
-        ? s.excludedPeople.filter((x) => typeof x === 'string')
-        : DEFAULT_SETTINGS.excludedPeople,
-      extraBars: Array.isArray(s.extraBars) ? s.extraBars.filter((x) => typeof x === 'string') : DEFAULT_SETTINGS.extraBars,
-    };
+    return loadSettingsFrom(localStorage);
   } catch {
     return DEFAULT_SETTINGS;
   }
 }
 function saveSettings(s: Settings) {
   try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    saveSettingsTo(localStorage, s);
   } catch {
-    /* storage unavailable — keep in memory */
+    /* storage unavailable: keep in memory */
   }
 }
 

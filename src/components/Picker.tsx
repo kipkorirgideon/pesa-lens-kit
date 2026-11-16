@@ -15,6 +15,7 @@ export function Picker({
   placeholder,
   labelFor,
   badge,
+  allowCustom,
 }: {
   selected: string[];
   options: Option[];
@@ -23,6 +24,8 @@ export function Picker({
   placeholder: string;
   labelFor: (v: string) => string;
   badge?: (v: string) => string | null;
+  /** Let the user add the typed text itself (plain text), not only a listed option. */
+  allowCustom?: boolean;
 }) {
   const [q, setQ] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,7 +53,7 @@ export function Picker({
                 type="button"
                 onClick={() => onRemove(v)}
                 aria-label={`Remove ${labelFor(v)}`}
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
               >
                 ×
               </button>
@@ -67,7 +70,7 @@ export function Picker({
           placeholder={placeholder}
           aria-label={placeholder.replace(/…$/, '')}
           aria-controls={listId}
-          className="h-9 w-full rounded-md border border-gray-300 px-3 text-sm"
+          className="h-9 w-full rounded-md border border-gray-300 px-3 text-sm outline-none focus:border-gray-500 focus-visible:ring-2 focus-visible:ring-blue-600"
         />
         <div role="status" className="sr-only">
           {q.trim()
@@ -82,7 +85,21 @@ export function Picker({
             aria-label="Matches"
             className="relative mt-1 max-h-72 overflow-auto rounded-md border border-gray-200 bg-white text-sm shadow-sm"
           >
-            {matches.length === 0 && <li className="px-3 py-2 text-gray-500">No matches.</li>}
+            {matches.length === 0 && !allowCustom && <li className="px-3 py-2 text-gray-500">No matches.</li>}
+            {allowCustom && !chosen.has(q.trim()) && (
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAdd(q.trim());
+                    setQ('');
+                  }}
+                  className="w-full truncate px-3 py-2 text-left hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                >
+                  Add “{q.trim()}” as typed
+                </button>
+              </li>
+            )}
             {matches.map((o) => (
               <li key={o.value}>
                 <button
@@ -92,7 +109,7 @@ export function Picker({
                     setQ('');
                     inputRef.current?.focus();
                   }}
-                  className="flex w-full items-baseline justify-between gap-3 px-3 py-2 text-left hover:bg-gray-50"
+                  className="flex w-full items-baseline justify-between gap-3 px-3 py-2 text-left hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
                 >
                   <span className="truncate">{o.label}</span>
                   {o.hint && <span className="shrink-0 text-xs text-gray-500 tabular-nums">{o.hint}</span>}

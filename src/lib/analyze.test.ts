@@ -3,7 +3,7 @@ import { analyze } from './analyze';
 import { nairobi, parseResult, txn } from './__fixtures__/messages';
 import type { Settings, Txn, TxnCat } from './types';
 
-const NONE: Settings = { excludedPeople: [], extraBars: [] };
+const NONE: Settings = { excludedPeople: [], extraBars: [], extraFood: [], venueMerges: [] };
 
 describe('analyze: money in / money out membership (SPEC Definitions)', () => {
   const at = nairobi(2026, 5, 10, 12);
@@ -204,7 +204,7 @@ describe('analyze: settings (excluded people)', () => {
   });
 
   it('excluded people leave drains and the oneway / borrow_give / frequent flags, but stay in people', () => {
-    const a = analyze(mk(), { excludedPeople: [' beth  SAMPLE', 'Chris Often'], extraBars: [] });
+    const a = analyze(mk(), { ...NONE, excludedPeople: [' beth  SAMPLE', 'Chris Often'] });
     expect(a.drains.people.map((p) => p.name)).toEqual(['Dan Sample']);
     expect(flag(a, 'oneway').value).toBe(0);
     expect(flag(a, 'borrow_give').value).toBe(0);
@@ -217,7 +217,7 @@ describe('analyze: settings (excluded people)', () => {
   });
 
   it('excluding one person leaves the others flagged', () => {
-    const a = analyze(mk(), { excludedPeople: ['Beth Sample'], extraBars: [] });
+    const a = analyze(mk(), { ...NONE, excludedPeople: ['Beth Sample'] });
     expect(flag(a, 'oneway').value).toBe(1);
     expect(flag(a, 'borrow_give').value).toBe(0);
     expect(flag(a, 'frequent').value).toBe(1);
@@ -227,8 +227,26 @@ describe('analyze: settings (excluded people)', () => {
     const r = parseResult([txn('till', nairobi(2026, 4, 25, 20), 700, { name: 'Sample Hardware.' })]);
     expect(analyze(r, NONE).fb.summary.payments).toBe(0);
     for (const extra of ['Sample Hardware', 'Till / Buy Goods|Sample Hardware']) {
-      const a = analyze(r, { excludedPeople: [], extraBars: [extra] });
+      const a = analyze(r, { ...NONE, extraBars: [extra] });
       expect(a.fb.summary).toMatchObject({ payments: 1, bars: 700 });
     }
+  });
+});
+
+describe('analyze: settings (extraFood, venueMerges)', () => {
+  const r = parseResult([
+    txn('till', nairobi(2026, 4, 25, 13), 400, { name: 'Sample Plot 1' }),
+    txn('till', nairobi(2026, 4, 26, 13), 600, { name: 'Sample Plot 2' }),
+  ]);
+  it('extraFood makes unrecognised payees food, and add/remove is reflected', () => {
+    expect(analyze(r, NONE).fb.summary.payments).toBe(0);
+    const a = analyze(r, { ...NONE, extraFood: ['sample plot'] });
+    expect(a.fb.summary).toMatchObject({ payments: 2, food: 1000 });
+    expect(a.fb.venues.map((v) => v.venue).sort()).toEqual(['Sample Plot 1', 'Sample Plot 2']);
+  });
+  it('venueMerges folds several tills into one venue row', () => {
+    const a = analyze(r, { ...NONE, extraFood: ['sample plot'], venueMerges: [{ match: 'SAMPLE PLOT', name: 'Sample Plot (all)' }] });
+    expect(a.fb.venues).toHaveLength(1);
+    expect(a.fb.venues[0]).toMatchObject({ venue: 'Sample Plot (all)', amount: 1000, visits: 2 });
   });
 });

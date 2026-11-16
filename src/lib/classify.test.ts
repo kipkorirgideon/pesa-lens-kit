@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classifyPayee, payeeName, personKey } from './classify';
+import { classifyPayee, payeeName, personKey, venueName } from './classify';
 
 const BARS = 'Bars & lounges';
 const FOOD = 'Restaurants, hotels & food';
@@ -59,9 +59,9 @@ describe('classifyPayee', () => {
   it('extraBars wins even over an exclusion, and matches case-insensitively', () => {
     const extra = new Set(['SAMPLE SACCO']);
     expect(classifyPayee('SAMPLE SACCO')).toBeNull();
-    expect(classifyPayee('SAMPLE SACCO', extra)).toBe(BARS);
-    expect(classifyPayee('Sample Sacco', extra)).toBe(BARS);
-    expect(classifyPayee('SAMPLE HARDWARE', new Set(['SAMPLE HARDWARE']))).toBe(BARS);
+    expect(classifyPayee('SAMPLE SACCO', { extraBars: extra })).toBe(BARS);
+    expect(classifyPayee('Sample Sacco', { extraBars: extra })).toBe(BARS);
+    expect(classifyPayee('SAMPLE HARDWARE', { extraBars: new Set(['SAMPLE HARDWARE']) })).toBe(BARS);
   });
 });
 
@@ -80,5 +80,37 @@ describe('name normalisation', () => {
     expect(personKey('  jane   doe ')).toBe('JANE DOE');
     expect(personKey('Jane\tDoe')).toBe('JANE DOE');
     expect(personKey('jane doe.')).toBe('JANE DOE.');
+  });
+});
+
+describe('settings-driven classification', () => {
+  const extraFood = ['Sample Plot', 'ACME EXACT'];
+  it('extraFood matches by prefix or exact name, case-insensitively', () => {
+    expect(classifyPayee('SAMPLE PLOT 4', { extraFood })).toBe(FOOD);
+    expect(classifyPayee('sample plot', { extraFood })).toBe(FOOD);
+    expect(classifyPayee('ACME EXACT', { extraFood })).toBe(FOOD);
+    expect(classifyPayee('SAMPLE PLOT 4')).toBeNull();
+  });
+  it('extraFood is not a substring or regex match', () => {
+    expect(classifyPayee('THE SAMPLE PLOT', { extraFood })).toBeNull();
+    expect(classifyPayee('ANYTHING', { extraFood: ['.*', ''] })).toBeNull();
+    expect(classifyPayee('AAAAAAAAAAAAAAAAAAAAAAAA!', { extraFood: ['(a+)+$'] })).toBeNull();
+  });
+  it('extraFood keeps the built-in order: NOT_FB, bar and meat win over it', () => {
+    expect(classifyPayee('SAMPLE PLOT SACCO', { extraFood })).toBeNull();
+    expect(classifyPayee('SAMPLE PLOT BAR', { extraFood })).toBe(BARS);
+    expect(classifyPayee('SAMPLE PLOT BUTCHERY', { extraFood })).toBe(MEAT);
+  });
+  it('venueName merges by prefix, first rule wins, ignores empty rules', () => {
+    const merges = [
+      { match: '', name: 'EVERYTHING' },
+      { match: 'sample hq', name: 'Sample HQ' },
+      { match: 'sample', name: 'Sample Other' },
+    ];
+    expect(venueName('SAMPLE HQ TILL 2', merges)).toBe('Sample HQ');
+    expect(venueName('SAMPLE ANNEX', merges)).toBe('Sample Other');
+    expect(venueName('OTHER PLACE', merges)).toBe('OTHER PLACE');
+    expect(venueName('SAMPLE HQ')).toBe('SAMPLE HQ');
+    expect(venueName('MY SAMPLE HQ', merges)).toBe('MY SAMPLE HQ');
   });
 });

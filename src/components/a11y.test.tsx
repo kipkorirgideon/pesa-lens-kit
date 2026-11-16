@@ -369,7 +369,7 @@ describe('Upload', () => {
 });
 
 describe('heading order on every page that uses ChartCard', () => {
-  const NONE = { excludedPeople: [], extraBars: [] };
+  const NONE = { excludedPeople: [], extraBars: [], extraFood: [], venueMerges: [] };
   const at = nairobi(2026, 5, 10, 23);
   const txns = [
     txn('send_person', nairobi(2026, 3, 1), 15000, { name: 'Beth Sample', phone: '0700000003' }),
