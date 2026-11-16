@@ -14,13 +14,16 @@ Subagents cannot call each other, so **the main session is the dispatcher**. Rou
 ```
 new feature/project  ─▶ apex (plan)      ─▶ "Forge: start TASK-n"
 "Forge: start TASK-n" ─▶ forge (build+PR) ─▶ "Apex: review PR #n"
-"Apex: review PR #n"  ─▶ apex (review)    ─▶ "Harbor: deploy PR #n"  or  "Forge: address review on PR #n"
+"Apex: review PR #n"  ─▶ apex (review)    ─▶ "User: check the preview, then say go → Harbor: ship PR #n"
+                                              or "Forge: address review on PR #n"
 "Forge: address review on PR #n" ─▶ forge ─▶ "Apex: re-review PR #n"
-"Harbor: deploy PR #n" ─▶ harbor          ─▶ "Deployed PR #n → <url>"  then next task
+user says "go"        ─▶ harbor (merge)    ─▶ Vercel auto-deploys main ─▶ "Deployed PR #n → <url>"
 ```
-Handoff state lives in `.claude/handoff/review.md` (written by Apex, read by Harbor). Harbor refuses to deploy without `VERDICT: APPROVED` and `DEPLOY: YES` there.
+Handoff state lives in `.claude/handoff/review.md` (written by Apex, read by Harbor). Harbor refuses to merge without `VERDICT: APPROVED` + `DEPLOY: YES` there **and** the user's "go" relayed by you. Vercel's Git integration does the actual deploys (preview per PR, production on merge to main).
 
-Keep looping through `docs/TASKS.md` until every task is ticked, then stop and summarise for the user. Ask the user only for things agents cannot do themselves: logging in (`gh auth login`, `npx vercel login`), confirming the Vercel project name, or a product decision that isn't in SPEC.md.
+**Do one task per run**: take it from Forge to the preview link, stop, and wait for the user. Never say "go" on the user's behalf.
+
+The repo starts with a working app (see `docs/STATUS.md`); the parser is verified against the original analysis (`docs/PARSER_NOTES.md`). Improve it — don't rewrite it. Ask the user only for things agents cannot do themselves: logging in (`gh auth login`, `npx vercel login`), confirming the Vercel project name, or a product decision that isn't in SPEC.md.
 
 ## Ground rules for everyone
 - **Privacy:** never read, copy, commit or upload a real SMS backup unless the user explicitly points to one for local testing; never paste its contents into code, tests, issues or PRs. `*.sms` and `backups/` are git-ignored.

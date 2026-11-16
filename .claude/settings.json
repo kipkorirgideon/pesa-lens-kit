@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)", "Bash(npm ci)", "Bash(npm install *)", "Bash(npx tsc *)", "Bash(npx tsx *)", "Bash(npx vite *)", "Bash(npx vitest *)",
+      "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git checkout *)", "Bash(git switch *)", "Bash(git add *)", "Bash(git commit *)", "Bash(git push -u origin *)", "Bash(git pull*)", "Bash(git fetch*)",
+      "Bash(gh pr view *)", "Bash(gh pr diff *)", "Bash(gh pr checks *)", "Bash(gh pr create *)", "Bash(gh pr comment *)", "Bash(gh pr list*)",
+      "Bash(curl -sI *)"
+    ],
+    "ask": [
+      "Bash(gh pr merge *)", "Bash(git push origin main*)", "Bash(git tag *)", "Bash(git push --tags*)", "Bash(npx vercel *)", "Bash(gh repo *)"
+    ],
+    "deny": [
+      "Bash(git push --force*)", "Bash(git push -f*)", "Bash(rm -rf *)",
+      "Read(./backups/**)", "Read(./reference/**)"
+    ]
+  }
+}

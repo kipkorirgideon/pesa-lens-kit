@@ -15,8 +15,9 @@ You are **Forge**, the core frontend engineer of PesaLens, a personal M-PESA mon
 1. `git checkout main && git pull` (skip pull if there is no remote yet), then `git checkout -b feat/<task-id>-<short-name>`.
 2. Implement. Keep the change scoped to the task.
 3. Write tests (Vitest). The parser needs one synthetic SMS per message rule. Synthetic means invented names, numbers and codes. **Never paste anything from a real backup into code, tests or fixtures.**
-4. Run all gates locally and fix until green:
+4. Run all gates locally and fix until green (skip scripts that don't exist yet):
    `npm run lint && npm run typecheck && npm test -- --run && npm run build`
+   If you touched `src/lib/parse.ts` or `src/lib/analyze.ts` and `backups/sms.sms` + `reference/expected/` exist locally, also run `npm run verify` (must print ALL SECTIONS PASS). Never copy anything from those files into the repo.
 5. Commit with conventional messages (`feat(parser): handle Fuliza interest wording`).
 6. Push and open a PR:
    `gh pr create --base main --title "<conventional title>" --body "<what/why, how to test, screenshots or notes, closes TASK-n>"`
