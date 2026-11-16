@@ -538,11 +538,38 @@ golden data will expose, so settle them *before* interpreting a verify failure a
   - Tests: an exact name still matches (a name is a prefix of itself); a shorter entry captures its
     longer variants; an unrelated name with the entry in the middle does **not** match; empty and
     whitespace-only entries are inert.
-  - `npm run verify` re-run by the owner after shortening `reference/settings.json` to prefixes:
-    ALL SECTIONS PASS, identical to the exact-name baseline.
+  - `npm run verify` on the **exact-name** `reference/settings.json`: ALL SECTIONS PASS, identical to
+    the exact-name baseline (only the TASK-14 approved deltas applying). This is the behaviour-preservation
+    proof and it is the one that gates the merge.
+  - Shortening an entry in `reference/settings.json` keeps verify passing **only where that entry is a
+    genuine leading prefix of the payee name**. See the correction below before writing any other
+    shortening experiment.
 
   **Out of scope.** Substring/"contains" matching, regex support, changing `excludedPeople` matching
   (it keys on `personKey`, deliberately exact).
+
+  **Correction to the original fifth criterion (Apex, PR #22 review).** As first written, this task
+  asked for "`verify` re-run after shortening `reference/settings.json` to prefixes: ALL SECTIONS PASS".
+  That criterion was **unsatisfiable** for the fragments it had in mind and has been replaced above.
+  The owner ran it: with the exact names, verify is ALL SECTIONS PASS on the TASK-17 branch; with the
+  entries shortened to the fragments the deleted `PROFILE.extraBarPattern` regex used, 12 sections fail.
+  **Mechanism:** the old regex matched a fragment *anywhere* in a payee name; prefix matching only matches
+  at the **start**. At least one of those fragments occurs mid-name — a venue whose name begins with an
+  unrelated word and carries the keyword later. Under prefix matching that venue is no longer a bar, so it
+  leaves the bar drains and the F&B tables, another venue takes its rank slot, and the TASK-14 allow-list
+  then correctly reports its cells as *stale* (fail-closed, as designed). None of this is a defect in the
+  TASK-17 code, which is behaviour-preserving against exact names. The lesson for future tasks: prefix
+  matching fixes the till-spelling-variant case (entries sharing a leading prefix), **not** the
+  keyword-in-the-middle case, and a task must not state a proof that assumes otherwise.
+
+  **Ruling: substring/"contains" matching is not coming back.** Prefix is the deliberate end state for
+  every plain-text settings match (`extraBars`, `extraFood`, `venueMerges`; `excludedPeople` stays exact).
+  Substring is more forgiving but over-captures silently: a short fragment would sweep unrelated payees
+  into Bars with no signal in the UI, and silently misclassifying money is worse than typing a venue's full
+  leading name. A venue whose distinguishing keyword sits mid-name is listed by its full leading name —
+  which is what the reference settings already do, and why verify passes. This supersedes the "only if real
+  payee data proves prefix insufficient" wording in ruling (b) above: the data has now been looked at, one
+  venue is affected, it remains fully expressible by its full name, and the answer is still no.
 
 - [ ] ## TASK-18 — Settings hardening nits from the PR #5 review (low priority)
       **Goal.** Three small, non-blocking issues Apex noted while reviewing PR #5. One PR, no
@@ -825,3 +852,25 @@ downloading charting code they do not render.
   applied only to those exact cells; an allowed cell prints `PASS (approved delta: TASK-14, n cells)`, any
   other mismatch still fails, and an allow-listed cell that no longer differs fails as stale. `npm run
   verify` prints ALL SECTIONS PASS. Provenance in `docs/PARSER_NOTES.md` "Baseline provenance".
+
+- [ ] ## TASK-31 — Make `extraBars` prefix matching reachable from Settings _(Forge)_
+      **Why.** Found in the PR #22 (TASK-17) review. `extraBars` now matches by case-insensitive,
+      whitespace-collapsed prefix, but the "Extra bars" `Picker` in `src/pages/Settings.tsx` has no
+      `allowCustom` (unlike "Extra food venues") and its subtitle does not say how matching works. A user
+      can therefore only select whole payee names from the list and cannot type the short leading text
+      that would capture one venue's several till spellings — so TASK-17's benefit exists in the engine
+      but not in the UI. Out of scope for TASK-17, which named only the lib files, its tests and
+      `docs/PARSER_NOTES.md`.
+
+  **Files.** `src/pages/Settings.tsx` (plus its tests / the Settings e2e if the copy is asserted there).
+
+  **Acceptance criteria.**
+  - The "Extra bars" `Picker` accepts custom text (`allowCustom`), like "Extra food venues".
+  - Its subtitle states the matching rule in the same words as the food one: pick one, or type text —
+    anything **starting with** it (any capitalisation) counts as a bar; plain text only, no patterns.
+  - The copy does not promise substring matching: text that appears only in the middle of a payee name
+    does not match, and that venue must be entered by its full leading name (see the TASK-17 ruling).
+  - A test covers adding a custom `extraBars` entry and seeing it applied; mobile layout at 400 px is
+    unchanged; no new dependency.
+
+  **Out of scope.** Any change to matching semantics, and substring/"contains" matching (ruled out).
