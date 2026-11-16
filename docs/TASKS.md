@@ -599,3 +599,23 @@ downloading charting code they do not render.
   - No other `CLAUDE.md` wording changes beyond the user's decision to drop the "Do one task per run" rule.
 
   **Out of scope.** Committing handoff files, changing `.gitignore`, any source change.
+
+- [ ] ## TASK-22 — Propagate the post-auto-deploy `DEPLOY: YES/NO` convention _(Forge)_
+      **Why.** Vercel's Git integration auto-deploys `main` on every merge, so `DEPLOY: NO` no longer
+      means "no deployment happened" — a docs-only merge still publishes a production build carrying
+      `src/profile.ts`. Apex ruled (PR #12) that `DEPLOY` keeps meaning "is this user-visible / worth a
+      smoke test", and that the unauthenticated 302 exposure check is a standing rule after **every**
+      merge. `.claude/agents/harbor.md` already says this; the other three places still do not.
+
+  **Files.** `.claude/agents/apex.md` (the handoff-format section), `docs/RELEASE.md`
+  (the `DEPLOY: YES or NO` section), `docs/TASKS.md` (tick this entry).
+
+  **Acceptance criteria.**
+  - `apex.md` and `docs/RELEASE.md` state that `DEPLOY` signals user-visibility / smoke-test need only,
+    and that merging always produces a production deployment.
+  - Both state the standing rule: Harbor runs the unauthenticated 302 exposure check on the
+    auto-created production deployment after every merge, including `DEPLOY: NO` ones.
+  - Wording matches `.claude/agents/harbor.md`; no contradictions left between the four files.
+
+  **Out of scope.** Changing the handoff file format or field names, any `src/` change, anything to do
+  with TASK-5 or SSO settings themselves.
