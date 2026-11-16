@@ -129,7 +129,7 @@ export function DataTable<T>({
         tabIndex={0}
         role="region"
         aria-label={`${tableLabel} (scrollable)`}
-        className="overflow-auto rounded-md border border-gray-200"
+        className="relative overflow-auto rounded-md border border-gray-200"
         style={{ maxHeight }}
       >
         <table aria-label={tableLabel} className="w-full border-collapse text-sm tabular-nums">

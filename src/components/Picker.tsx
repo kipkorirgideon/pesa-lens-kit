@@ -80,7 +80,7 @@ export function Picker({
           <ul
             id={listId}
             aria-label="Matches"
-            className="mt-1 max-h-72 overflow-auto rounded-md border border-gray-200 bg-white text-sm shadow-sm"
+            className="relative mt-1 max-h-72 overflow-auto rounded-md border border-gray-200 bg-white text-sm shadow-sm"
           >
             {matches.length === 0 && <li className="px-3 py-2 text-gray-500">No matches.</li>}
             {matches.map((o) => (

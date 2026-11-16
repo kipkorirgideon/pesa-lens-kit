@@ -104,14 +104,13 @@ test('every route renders and its lazy chunk loads, with no errors and no foreig
   expect(errors).toEqual([]);
 });
 
-// KNOWN FAILURE, tracked as TASK-26: the visually hidden `sr-only` cue spans inside horizontally
-// scrolling tables are position:absolute with a non-positioned scroller, so they escape the clip and
-// widen the page (at least Red flags & drains: +495 px at 400 px). test.fail() keeps this suite green while the
-// bug stands and turns red the moment it is fixed, which is the cue to delete the test.fail() line.
+// Regression guard for TASK-26: a visually hidden `sr-only` cue (position:absolute) inside a scrolling
+// table escaped its non-positioned scroller and widened the page. Reports every offending route at once.
 test('no horizontal page scroll on any tab at 400x800', async ({ page }) => {
-  test.fail();
   const overflow = await visitAll(page);
-  for (const r of ROUTES) expect(overflow[r], `horizontal page overflow on ${r}`).toBeLessThanOrEqual(0);
+  console.log('page overflow at 400x800 (px):', JSON.stringify(overflow));
+  const offenders = Object.entries(overflow).filter(([, px]) => px > 0);
+  expect(offenders, 'routes with horizontal page overflow (route, px)').toEqual([]);
 });
 
 test('Segmented control responds to arrow keys', async ({ page }) => {

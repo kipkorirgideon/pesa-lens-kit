@@ -57,7 +57,7 @@ function ChartTable({ title, data }: { title: string; data: ChartData }) {
         tabIndex={0}
         role="region"
         aria-label={`Data for ${title}`}
-        className="mt-2 max-h-72 overflow-auto rounded-md border border-gray-200"
+        className="relative mt-2 max-h-72 overflow-auto rounded-md border border-gray-200"
       >
         <table className="w-full border-collapse text-xs tabular-nums">
           <caption className="sr-only">{data.summary}</caption>
@@ -247,7 +247,11 @@ export function Cue({ glyph, text }: { glyph: string; text: string }) {
       <span aria-hidden="true" className="ml-1 text-[0.7em]">
         {glyph}
       </span>
-      <span className="sr-only">, {text}</span>
+      {/* `sr-only` is position:absolute. Anchoring it to its own `relative` wrapper means it can never be
+          positioned against an ancestor outside a scroll container, whatever table it is rendered in. */}
+      <span className="relative">
+        <span className="sr-only">, {text}</span>
+      </span>
     </>
   );
 }
