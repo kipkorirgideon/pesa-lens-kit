@@ -207,7 +207,9 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
 
   **Out of scope.** Any other parser rule change, adding new transaction categories, changing dedupe.
 
-- [ ] ## TASK-9 — Release checklist and README refresh
+  **Status: BLOCKED.** `backups/sms.sms` and `reference/expected/` are absent from this checkout, so the before/after `npm run verify` requirement cannot be met.
+
+- [x] ## TASK-9 — Release checklist and README refresh
       **Goal.** Make the deploy decision mechanical, and document the local golden-test workflow for a
       future reader.
 
