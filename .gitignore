@@ -8,3 +8,6 @@ backups/
 reference/
 coverage/
 .DS_Store
+.claude/settings.local.json
+docs/DEPLOYS.md
+.claude/handoff/
