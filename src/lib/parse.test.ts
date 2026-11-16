@@ -198,7 +198,7 @@ describe('dedupe', () => {
 
 describe('recv_alt reachability', () => {
   it('a received message with "at" but no parsable time is parsed by recv_alt, not recv', () => {
-    const body = 'QAB1CD2EH4 Confirmed. You have received Ksh1,500.00 from JANE ROE 0722***456 on 3/4/24 at';
+    const body = MSG_EXTRA.recv_alt_truncated;
     expect(RULES.find(([n]) => n === 'recv')![1].test(body)).toBe(false);
     expect(RULES.find(([n]) => n === 'recv_alt')![1].test(body)).toBe(true);
     expect(one(body)).toMatchObject({ code: 'QAB1CD2EH4', cat: 'recv_person', amount: 1500, name: 'JANE ROE', phone: '0722***456' });
@@ -249,6 +249,47 @@ describe('parse coverage gaps (TASK-3)', () => {
 
   it('parses a negative balance', () => {
     expect(one(MSG_EXTRA.negative_balance).balance).toBe(-20);
+  });
+});
+
+describe('transaction cost is case-insensitive (TASK-13)', () => {
+  it('captures lower-case and mixed-case cost lines', () => {
+    expect(one(MSG_EXTRA.cost_lowercase).cost).toBe(7);
+    expect(one(MSG_EXTRA.cost_mixed_case).cost).toBe(29);
+    expect(one(MSG.send_person).cost).toBe(13);
+  });
+});
+
+describe('counters fire only for messages that matched no rule (TASK-13)', () => {
+  const none = { insufficientFunds: 0, wrongPin: 0, pinLocked: 0 };
+
+  it('a message that parses as a transaction does not increment any failure counter', () => {
+    const r = parseBackup(backup(MSG_EXTRA.till_with_failure_words));
+    expect(r.txns).toHaveLength(1);
+    expect(r.counters).toMatchObject(none);
+  });
+
+  it('a message that matches no rule but has failure wording does increment', () => {
+    const r = parseBackup(backup(`${MSG.wrong_pin} insufficient funds. PIN is locked.`));
+    expect(r.txns).toHaveLength(0);
+    expect(r.counters).toMatchObject({ insufficientFunds: 1, wrongPin: 1, pinLocked: 1 });
+  });
+
+  it('regression TASK-12: a duplicate (same category and code) is still "matched", so it feeds no counter', () => {
+    const r = parseBackup(backup(MSG.till, MSG_EXTRA.till_with_failure_words.replace('QAB1CD2EH7', 'QAB1CD2EF6')));
+    expect(r.txns).toHaveLength(1);
+    expect(r.counters).toMatchObject(none);
+  });
+
+  it('regression TASK-8: a non-M-PESA unmatched failure message feeds no counter', () => {
+    const r = parseBackup({ listSms: [otherSms(MSG.wrong_pin), otherSms(MSG_EXTRA.till_with_failure_words)] });
+    expect(r.txns).toHaveLength(0);
+    expect(r.counters).toMatchObject(none);
+  });
+
+  it('KCB loan requests follow the same rule: counted and deduped when unmatched', () => {
+    const r = parseBackup({ listSms: [sms(MSG.kcb_loan_a), sms(MSG.kcb_loan_a_again, T0 + 1)] });
+    expect(r.counters.kcbLoanRequests).toBe(1);
   });
 });
 
