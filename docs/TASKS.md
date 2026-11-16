@@ -150,14 +150,6 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Out of scope.** Import/export of settings as a file, multi-profile support, renaming any field in
   `Analysis`.
 
-  **Status: BLOCKED — do not tick.** PR #5 is open and carries an APPROVED Apex verdict
-  (`.claude/handoff/review-pr5.md`), but it is **not merged**. It changes `classify.ts` and
-  `analyze.ts`, so the merge gate requires `npm run verify` -> ALL SECTIONS PASS, and that needs
-  `backups/sms.sms` plus `reference/expected/` (and a local `reference/settings.json` carrying the old
-  profile values), all of which are git-ignored and absent from every agent checkout. No agent can
-  work around this; only the repo owner can run it locally. This box was found ticked in the working
-  copy on 2026-11-16 while PR #5 was still open and was unticked by Apex during the PR #8 review.
-
 - [x] ## TASK-6 — Route-level code splitting to get the entry chunk under 500 kB
       **Goal.** Stop shipping Recharts to the Upload screen; cut first load for a user who has not yet
       dropped a file.
@@ -520,8 +512,9 @@ golden data will expose, so settle them *before* interpreting a verify failure a
       **Goal.** Remove the last asymmetry in settings matching: `extraFood` and `venueMerges` match by
       case-insensitive prefix, `extraBars` still requires an exact upper-cased name, so one venue with
       several till spellings must be listed once per spelling.
-      **Blocked by:** one clean `npm run verify` pass on PR #5's code with exact-name
-      `reference/settings.json`. Do not start before that baseline exists.
+      **Baseline:** `npm run verify` passes on TASK-5's code only when `reference/settings.json` lists
+      every payee variant by exact name (the PR #5 rulings); partial names there do not match. Do not
+      start before that exact-name baseline is confirmed.
 
   **Files.** `src/lib/classify.ts`, `src/lib/analyze.ts` (the `extraBars` Set is built there and
   strips a `Paybill|`/`Till / Buy Goods|` key prefix — that normalisation must survive),
@@ -561,12 +554,8 @@ golden data will expose, so settle them *before* interpreting a verify failure a
   **Out of scope.** Import/export of settings, multi-profile support, any change to matching
   semantics (TASK-17 owns that).
 
-  **Status: BLOCKED on `main` — do not tick (recorded 2026-11-16).** This task targets
-  `src/lib/settings.ts`, `loadSettingsFrom` and a v2 storage key, none of which exist on `main`; they
-  live only in unmerged PR #5 (TASK-5). On `main` settings load through `loadSettings` in
-  `src/state.tsx` with the single `mpesa.settings.v1` key, and the "Reset to defaults ... defaults are
-  empty" criterion is false because `DEFAULT_SETTINGS` still carries `PROFILE.excludedPeople`. TASK-18
-  depends on TASK-5 landing (which is itself blocked on the local `npm run verify` run).
+  **Status: unblocked (TASK-5 landed).** `src/lib/settings.ts`, `loadSettingsFrom`, the v2 storage key
+  and empty `DEFAULT_SETTINGS` now exist on `main`, so this task can be built against them.
 
 ---
 
