@@ -64,7 +64,7 @@ function HeatMap({ grid }: { grid: BizGridRow[] }) {
     ? `Heat map of payments by weekday and hour. The busiest slot is ${peak.day} ${hourLabel(peak.hour)}, ${ksh(peak.total)} across ${num(peak.count)} payments. Weekday totals are in the chart above and time-of-day totals in the table below.`
     : 'Heat map of payments by weekday and hour. There are no payments to show.';
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <div
         role="img"
         aria-label={summary}

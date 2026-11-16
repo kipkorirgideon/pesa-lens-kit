@@ -769,20 +769,32 @@ downloading charting code they do not render.
 
 ---
 
-- [ ] ## TASK-26 — Visually hidden cues widen the page at 400 px _(Forge; found by the TASK-10 E2E)_
-      **Why.** A real browser at 400 x 800 shows horizontal page scroll on Red flags & drains (document
-      `scrollWidth` exceeds `clientWidth` by 495 px). Cause: the `sr-only` cue spans in table cells
-      (`Cue`, TASK-19) are `position: absolute`; their horizontal-scroll wrapper is not
-      `position: relative`, so they are positioned against an ancestor outside it, escape the
-      `overflow-x: auto` clip and widen the page. jsdom cannot see this. The mobile non-negotiable is
-      therefore currently violated on that tab (and on any other tab with a `Cue` in a wide table).
+- [x] ## TASK-26 — Visually hidden cues widen the page at 400 px _(Forge; found by the TASK-10 E2E)_
+      **Why.** At 400 x 800 two tabs overflow the page horizontally: `/flags` by +495 px and `/people`
+      by +357 px (`/overview`, `/payees`, `/bars`, `/loans`, `/settings` measure 0). The pixel numbers
+      are fixture-dependent; the rule is "any tab rendering a `Cue` inside a wide table cell". Cause:
+      the `sr-only` cue spans (`Cue`, TASK-19) are `position: absolute` inside `<td>`s whose scroll
+      wrapper is `overflow-x: auto` but `position: static`, so they are positioned against an ancestor
+      outside it, escape the clip and widen the document. jsdom cannot see this.
 
-  **Files.** likely `src/components/DataTable.tsx` (add `relative` to the scroll wrapper) and
-  `e2e/settings.spec.ts`.
+  **Fix (done).** Two layers so the trap is closed, not just the two tabs: `Cue` wraps its `sr-only`
+  span in its own `relative` span (self-contained, correct in any container), and every scroll
+  wrapper (`DataTable`, the chart data table in `ui.tsx`, `Picker`, `Payees`) gets `relative`.
+  Measured after: all seven routes 0.
 
   **Acceptance criteria.**
   - No tab has page-level horizontal overflow at 400 x 800.
   - The `test.fail()` line is deleted from `no horizontal page scroll on any tab at 400x800` in
-    `e2e/settings.spec.ts` and that test passes.
+    `e2e/settings.spec.ts`, the test reports every offending route, and it passes.
 
   **Out of scope.** Redesigning `Cue`.
+
+- [ ] ## TASK-27 — Make `e2e (playwright)` a required status check _(blocked on the user)_
+      **Why.** The cross-origin assertion in the E2E is the only automated test of the README's
+      privacy claim ("nothing leaves your browser"). While the job is not required, a PR can merge
+      with it red.
+
+  **Blocked on the user.** GitHub repo settings (branch protection required contexts); only the repo
+  owner can change them. Agents must not attempt it. Do not rename the existing CI job.
+
+  **Acceptance criteria.** `e2e (playwright)` is listed among required status checks for `main`.
