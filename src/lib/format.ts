@@ -57,4 +57,5 @@ export function titleCase(s: string): string {
   return s.toLowerCase().replace(/(^|[\s'\-(])([a-z])/g, (_m, p: string, c: string) => p + c.toUpperCase());
 }
 
-export const COLORS = { blue: '#2f6fdb', orange: '#e8833a', red: '#d64545', gray: '#b8bec8', green: '#2e9d6a' } as const;
+/** `red` is 4.88:1 on white (WCAG AA text needs 4.5:1); the previous #d64545 measured 4.38:1. */
+export const COLORS = { blue: '#2f6fdb', orange: '#e8833a', red: '#cc3d3d', gray: '#b8bec8', green: '#2e9d6a' } as const;

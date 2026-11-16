@@ -3,7 +3,7 @@ import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Toolt
 import { useApp, useAnalysis } from '../state';
 import { COLORS, dateLabel, ksh, normName, num, short, titleCase } from '../lib/format';
 import { ChartCard, Legend, PageTitle, Section, Segmented, Takeaway } from '../components/ui';
-import { MoneyTooltip, axisProps } from '../components/chart';
+import { MoneyTooltip, axisProps, chartData } from '../components/chart';
 import { DataTable, type Column } from '../components/DataTable';
 import type { PersonRow } from '../lib/types';
 
@@ -52,7 +52,7 @@ export default function People() {
         render: (r) => (
           <>
             {r.display}
-            {excluded.has(r.name) && <span className="ml-1.5 text-xs text-gray-400">excluded</span>}
+            {excluded.has(r.name) && <span className="ml-1.5 text-xs text-gray-500">excluded</span>}
           </>
         ),
       },
@@ -115,6 +115,16 @@ export default function People() {
           />
         }
         height={Math.max(260, chart.length * 26 + 30)}
+        data={chartData(
+          chart,
+          (r) => r.name,
+          'Person',
+          [
+            { name: 'Sent', get: (r) => -r.sent },
+            { name: 'Received', get: (r) => r.recv },
+          ],
+          'people',
+        )}
       >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chart} layout="vertical" stackOffset="sign" margin={{ top: 0, right: 12, left: 0, bottom: 0 }}>
@@ -124,9 +134,9 @@ export default function People() {
               type="category"
               dataKey="name"
               {...axisProps}
-              width={120}
+              width={128}
               interval={0}
-              tick={{ fontSize: 11, fill: '#374151' }}
+              tick={{ fontSize: 12, fill: '#374151' }}
               tickFormatter={(v: string) => (v.length > 18 ? v.slice(0, 17) + '…' : v)}
             />
             <ReferenceLine x={0} stroke="#9ca3af" />

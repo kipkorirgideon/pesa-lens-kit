@@ -164,7 +164,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Out of scope.** Replacing or tree-shaking Recharts itself, prefetching strategies, service
   workers, any visual redesign.
 
-- [ ] ## TASK-7 — Accessibility and 400 px mobile audit
+- [x] ## TASK-7 — Accessibility and 400 px mobile audit
       **Goal.** Make every page genuinely usable at 400 px and with a keyboard/screen reader; fix what the
       audit finds.
 
@@ -242,3 +242,25 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
     origin during the journey.
 
   **Out of scope.** Visual-regression snapshots, cross-browser matrices, testing chart internals.
+
+---
+
+- [ ] ## TASK-19 — Accessibility follow-ups deferred from TASK-7
+      **Goal.** Close the gaps the TASK-7 audit found but did not fix.
+
+  **Acceptance criteria.**
+  - Colour-only cues in tables get a non-colour signal: "Last 12 m" cells that are red because the
+    value rose, and negative "Net" cells, gain a text or glyph marker (for example an up arrow with a
+    visually hidden "up on prior 12 months").
+  - Chart series that are told apart only by fill colour (stacked bars) get a second cue: direct
+    labels or patterns. The data tables already carry the numbers.
+  - Heading order: `ChartCard` titles are `h3` but sit directly under the page `h1` on Overview and
+    Loans; give `ChartCard` a `headingLevel` prop or restructure so no level is skipped.
+  - Charts are not keyboard-reachable (tooltips are hover/touch only). Either enable Recharts
+    `accessibilityLayer` after checking it against the CSP and bundle budget, or document the
+    data table as the intended keyboard path.
+  - `eslint-plugin-jsx-a11y` 6.10 declares peers up to ESLint 9; `package.json` carries an `overrides`
+    entry so it installs next to ESLint 10. Drop the override when the plugin publishes ESLint 10
+    support.
+
+  **Out of scope.** Dark mode, i18n, redesigning charts.

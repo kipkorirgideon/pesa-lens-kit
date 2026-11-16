@@ -4,7 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useApp, useAnalysis } from '../state';
 import { COLORS, ksh, normName, num, pct, titleCase } from '../lib/format';
 import { ChartCard, Legend, PageTitle, Section, SEVERITY_TEXT, SeverityLabel } from '../components/ui';
-import { MoneyTooltip, axisProps } from '../components/chart';
+import { MoneyTooltip, axisProps, chartData } from '../components/chart';
 import { DataTable, type Column } from '../components/DataTable';
 import type { DrainBarRow, DrainPersonRow, Flag } from '../lib/types';
 
@@ -35,7 +35,7 @@ function FlagCard({ f }: { f: Flag }) {
   );
 }
 
-const warn = (s: string) => (s ? <span className="text-red-600">{s}</span> : <span className="text-gray-400">—</span>);
+const warn = (s: string) => (s ? <span className="text-red-600">{s}</span> : <span className="text-gray-500">—</span>);
 
 const barCols: Column<DrainBarRow>[] = [
   { key: 'rank', header: '#', value: (r) => r.rank, align: 'right' },
@@ -107,7 +107,7 @@ export default function Flags() {
         title="Red flags & drains"
         subtitle={
           <>
-            <span className="text-red-600">{counts.High} high</span> · <span className="text-amber-600">{counts.Medium} medium</span> ·{' '}
+            <span className="text-red-600">{counts.High} high</span> · <span className="text-amber-700">{counts.Medium} medium</span> ·{' '}
             <span className="text-gray-500">{counts.Low} low</span>
           </>
         }
@@ -141,6 +141,16 @@ export default function Flags() {
               />
             }
             height={Math.max(200, barChart.length * 38 + 30)}
+            data={chartData(
+              barChart,
+              (r) => r.venue,
+              'Venue',
+              [
+                { name: 'Last 12 months', get: (r) => r.last_12m },
+                { name: 'Prior 12 months', get: (r) => r.prev_12m },
+              ],
+              'venues',
+            )}
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barChart} layout="vertical" margin={{ top: 0, right: 12, left: 0, bottom: 0 }} barGap={1}>
@@ -150,9 +160,9 @@ export default function Flags() {
                   type="category"
                   dataKey="venue"
                   {...axisProps}
-                  width={130}
+                  width={140}
                   interval={0}
-                  tick={{ fontSize: 11, fill: '#374151' }}
+                  tick={{ fontSize: 12, fill: '#374151' }}
                   tickFormatter={(v: string) => (v.length > 22 ? v.slice(0, 21) + '…' : v)}
                 />
                 <Tooltip cursor={{ fill: '#f3f4f6' }} content={<MoneyTooltip countKey="payments" />} />

@@ -27,3 +27,11 @@ body {
 .recharts-wrapper svg {
   overflow: visible;
 }
+/* Visible keyboard focus on every interactive element (WCAG 2.4.7). */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #2f6fdb;
+  outline-offset: 2px;
+}

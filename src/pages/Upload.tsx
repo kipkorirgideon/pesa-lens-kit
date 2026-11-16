@@ -31,43 +31,42 @@ export default function Upload() {
       </div>
 
       <div
-        role="button"
-        tabIndex={0}
         aria-busy={loading}
-        onClick={() => input.current?.click()}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            input.current?.click();
-          }
-        }}
         onDragOver={(e) => {
           e.preventDefault();
           setDrag(true);
         }}
         onDragLeave={() => setDrag(false)}
         onDrop={onDrop}
-        className={`flex min-h-[200px] cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-4 py-8 text-center outline-none transition-colors focus-visible:border-gray-500 ${drag ? 'border-[#2f6fdb] bg-blue-50/40' : 'border-gray-300 hover:border-gray-400'}`}
+        className={`flex min-h-[200px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors ${drag ? 'border-[#2f6fdb] bg-blue-50/40' : 'border-gray-300'}`}
       >
         {loading ? (
-          <>
+          <div role="status" className="flex flex-col items-center gap-3">
             <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-gray-200 border-t-[#2f6fdb]" aria-hidden />
             <span className="text-sm text-gray-600">Reading and analysing your messages…</span>
-          </>
+          </div>
         ) : (
           <>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.6" aria-hidden>
               <path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className="text-sm font-medium text-gray-800">Drop your backup file here</span>
-            <span className="text-xs text-gray-500">or tap to choose a file</span>
+            <span className="text-sm text-gray-800">Drop your backup file here, or</span>
+            <button
+              type="button"
+              onClick={() => input.current?.click()}
+              className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
+            >
+              Choose a file
+            </button>
           </>
         )}
         <input
           ref={input}
           type="file"
+          aria-label="Backup file"
           accept=".sms,.json,application/json,text/plain"
-          className="hidden"
+          tabIndex={-1}
+          className="sr-only"
           onChange={(e) => {
             void handle(e.target.files?.[0]);
             e.target.value = '';
@@ -83,7 +82,7 @@ export default function Upload() {
 
       {analysis && !loading && (
         <div className="rounded-md border border-gray-200 px-3 py-2.5 text-sm text-gray-700">
-          Loaded <span className="font-medium">{fileName}</span>: {num(analysis.summary.transactions)} transactions,{' '}
+          Loaded <span className="break-all font-medium">{fileName}</span>: {num(analysis.summary.transactions)} transactions,{' '}
           {dateLabel(analysis.summary.first)} – {dateLabel(analysis.summary.last)}.{' '}
           <button type="button" onClick={() => nav('/overview')} className="font-medium text-[#2f6fdb] hover:underline">
             Open the dashboard →

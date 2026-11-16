@@ -3,7 +3,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useAnalysis } from '../state';
 import { COLORS, dateLabel, hourLabel, ksh, monthLabel, monthShort, num, pct, short } from '../lib/format';
 import { ChartCard, Kpi, Legend, PageTitle, Section, Takeaway } from '../components/ui';
-import { MoneyTooltip, axisProps, gridProps } from '../components/chart';
+import { MoneyTooltip, axisProps, chartData, gridProps } from '../components/chart';
 import { DataTable, type Column } from '../components/DataTable';
 import type { FbCatRow, FbNightRow, FbVenueRow } from '../lib/types';
 
@@ -12,6 +12,8 @@ const SERIES = [
   { key: 'food', name: 'Restaurants, hotels & food', color: COLORS.blue },
   { key: 'meat', name: 'Butcheries & nyama choma', color: COLORS.gray },
 ] as const;
+
+const seriesOf = SERIES.map((s) => ({ name: s.name, get: (r: Record<typeof s.key, number>) => r[s.key] }));
 
 const catCols: Column<FbCatRow>[] = [
   { key: 'category', header: 'Category', value: (r) => r.category },
@@ -126,13 +128,18 @@ export default function Bars() {
       <DataTable rows={fb.cats} columns={catCols} rowKey={(r) => r.category} filename="mpesa-food-drink-categories" />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <ChartCard title="By year" height={240}>
+        <ChartCard title="By year" height={240} data={chartData(fb.yearly, (r) => String(r.year), 'Year', seriesOf, 'years')}>
           <Stacked data={fb.yearly} xKey="year" countKey="payments" />
         </ChartCard>
-        <ChartCard title="By night of the week" subtitle="Payments before 05:00 count toward the previous night." height={240}>
+        <ChartCard
+          title="By night of the week"
+          subtitle="Payments before 05:00 count toward the previous night."
+          height={240}
+          data={chartData(fb.dow, (r) => r.day, 'Day', seriesOf, 'days of the week')}
+        >
           <Stacked data={fb.dow} xKey="day" countKey="count" />
         </ChartCard>
-        <ChartCard title="By hour" height={240}>
+        <ChartCard title="By hour" height={240} data={chartData(fb.hour, (r) => hourLabel(r.hour), 'Hour', seriesOf, 'hours of the day')}>
           <Stacked
             data={fb.hour}
             xKey="hour"
@@ -142,7 +149,7 @@ export default function Bars() {
             labelFormatter={(l) => `${hourLabel(Number(l))}–${String(Number(l)).padStart(2, '0')}:59`}
           />
         </ChartCard>
-        <ChartCard title="By month" height={240}>
+        <ChartCard title="By month" height={240} data={chartData(fb.monthly, (r) => monthLabel(r.month), 'Month', seriesOf, 'months')}>
           <Stacked data={fb.monthly} xKey="month" tickFormatter={monthShort} labelFormatter={(l) => monthLabel(String(l))} />
         </ChartCard>
       </div>
