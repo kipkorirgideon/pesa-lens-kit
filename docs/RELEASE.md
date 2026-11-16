@@ -20,7 +20,9 @@ Mechanical: follow it top to bottom. What each gate proves is in `README.md`.
 - **`DEPLOY: YES`** when a user can see a difference in the app: any change under `src/` that affects rendering or behaviour, parser or analysis output, `vercel.json` headers, `index.html`, build config that changes the emitted bundle, or dependencies that ship in the bundle.
 - **`DEPLOY: NO`** for changes that do not alter what is served: tests, docs, CI config, lint/format config, dev-only tooling. `NO` is a normal outcome, not an error or a skipped step; the gates still apply.
 
-When unsure, ask whether the built `dist/` would differ. If it would, deploy.
+`DEPLOY` signals user-visibility and whether a smoke test is needed, nothing more. It does **not** mean nothing was deployed: every merge to `main` auto-creates a production deployment, so Harbor runs the unauthenticated 302 exposure check on it after **every** merge and reports the result, including `DEPLOY: NO` ones.
+
+When unsure, ask whether the built `dist/` would differ. If it would, use `YES` so the deployment gets a smoke test.
 
 ## Deployment-exposure rule (applies to every deploy)
 
