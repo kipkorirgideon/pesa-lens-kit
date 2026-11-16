@@ -198,18 +198,24 @@ export default function Payees() {
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={a.biz.dow} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
-                {patternDefs(pid, [COLORS.blue, COLORS.orange])}
+                {patternDefs(`${pid}-dow`, [COLORS.blue, COLORS.orange])}
                 <CartesianGrid {...gridProps} />
                 <XAxis dataKey="day" {...axisProps} />
                 <YAxis {...axisProps} tickFormatter={short} width={48} />
                 <Tooltip cursor={{ fill: '#f3f4f6' }} content={<MoneyTooltip totalLabel="Total" countKey="count" />} />
-                <Bar isAnimationActive={false} dataKey="paybill" name="Paybill" stackId="a" fill={patternFill(pid, 0, COLORS.blue)} />
+                <Bar
+                  isAnimationActive={false}
+                  dataKey="paybill"
+                  name="Paybill"
+                  stackId="a"
+                  fill={patternFill(`${pid}-dow`, 0, COLORS.blue)}
+                />
                 <Bar
                   isAnimationActive={false}
                   dataKey="till"
                   name="Till"
                   stackId="a"
-                  fill={patternFill(pid, 1, COLORS.orange)}
+                  fill={patternFill(`${pid}-dow`, 1, COLORS.orange)}
                   radius={[2, 2, 0, 0]}
                 />
               </BarChart>
@@ -222,7 +228,7 @@ export default function Payees() {
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={a.biz.hour} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
-                {patternDefs(pid, [COLORS.blue, COLORS.orange])}
+                {patternDefs(`${pid}-hour`, [COLORS.blue, COLORS.orange])}
                 <CartesianGrid {...gridProps} />
                 <XAxis dataKey="hour" {...axisProps} tickFormatter={(h: number) => String(h).padStart(2, '0')} interval={2} />
                 <YAxis {...axisProps} tickFormatter={short} width={48} />
@@ -236,13 +242,19 @@ export default function Payees() {
                     />
                   }
                 />
-                <Bar isAnimationActive={false} dataKey="paybill" name="Paybill" stackId="a" fill={patternFill(pid, 0, COLORS.blue)} />
+                <Bar
+                  isAnimationActive={false}
+                  dataKey="paybill"
+                  name="Paybill"
+                  stackId="a"
+                  fill={patternFill(`${pid}-hour`, 0, COLORS.blue)}
+                />
                 <Bar
                   isAnimationActive={false}
                   dataKey="till"
                   name="Till"
                   stackId="a"
-                  fill={patternFill(pid, 1, COLORS.orange)}
+                  fill={patternFill(`${pid}-hour`, 1, COLORS.orange)}
                   radius={[2, 2, 0, 0]}
                 />
               </BarChart>

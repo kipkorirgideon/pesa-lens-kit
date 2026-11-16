@@ -404,8 +404,13 @@ describe('heading order on every page that uses ChartCard', () => {
 
   beforeAll(() => {
     // Recharts' ResponsiveContainer needs ResizeObserver, which jsdom lacks.
-    globalThis.ResizeObserver ??= class {
-      observe() {}
+    // It reports a fixed size so charts actually render their <defs>/<pattern> children (jsdom has no layout).
+    globalThis.ResizeObserver = class {
+      constructor(private cb: ResizeObserverCallback) {}
+      observe(target: Element) {
+        const contentRect = { width: 600, height: 300, top: 0, left: 0, right: 600, bottom: 300, x: 0, y: 0 } as DOMRectReadOnly;
+        this.cb([{ target, contentRect } as ResizeObserverEntry], this as unknown as ResizeObserver);
+      }
       unobserve() {}
       disconnect() {}
     };
@@ -426,5 +431,48 @@ describe('heading order on every page that uses ChartCard', () => {
       if (i > 0) expect(l, `h${l} follows h${levels[i - 1]}`).toBeLessThanOrEqual(levels[i - 1] + 1);
     });
     expect(levels.length).toBeGreaterThan(2);
+  });
+
+  const renderPage = (Page: () => JSX.Element) =>
+    render(
+      <MemoryRouter>
+        <AppCtx.Provider value={state}>
+          <Page />
+        </AppCtx.Provider>
+      </MemoryRouter>,
+    );
+
+  it('Loans: "Fuliza drawn" cells carry a non-colour cue only when fuliza > 0', () => {
+    const { container } = renderPage(Loans);
+    const table = [...container.querySelectorAll('table')].find((t) => t.textContent?.includes('Fuliza fees'))!;
+    const headers = [...table.querySelectorAll('thead th')].map((h) => h.textContent ?? '');
+    const col = headers.findIndex((h) => h.includes('Fuliza drawn'));
+    const rows = [...table.querySelectorAll('tbody tr')];
+    const cells = rows.map((r) => r.querySelectorAll('td')[col]);
+    const withCue = cells.filter((c) => c.textContent?.includes('overdraft used this month'));
+    const zero = cells.filter((c) => c.className.indexOf('text-red-600') === -1);
+    expect(withCue.length).toBeGreaterThan(0);
+    expect(zero.length).toBeGreaterThan(0);
+    cells.forEach((c) => {
+      const flagged = c.className.includes('text-red-600');
+      expect(c.textContent?.includes('overdraft used this month')).toBe(flagged);
+      expect(c.textContent?.includes('▲')).toBe(false);
+    });
+  });
+
+  it('Payees: no two <pattern> elements share an id', () => {
+    const { container } = renderPage(Payees);
+    const ids = [...container.querySelectorAll('pattern')].map((p) => p.id);
+    expect(ids.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('every page: no duplicate <pattern> ids', () => {
+    pages.forEach(([name, Page]) => {
+      const { container, unmount } = renderPage(Page);
+      const ids = [...container.querySelectorAll('pattern')].map((p) => p.id);
+      expect(new Set(ids).size, name).toBe(ids.length);
+      unmount();
+    });
   });
 });
