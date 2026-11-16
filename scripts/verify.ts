@@ -3,7 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseBackup } from '../src/lib/parse';
+import { isMpesaSender, parseBackup } from '../src/lib/parse';
 import { analyze } from '../src/lib/analyze';
 import { sanitizeSettings } from '../src/lib/settings';
 
@@ -19,7 +19,9 @@ const SETTINGS = sanitizeSettings(existsSync(settingsPath) ? JSON.parse(readFile
 console.log(existsSync(settingsPath) ? 'settings: reference/settings.json' : 'settings: empty defaults (no reference/settings.json)');
 
 const t0 = Date.now();
-const pr = parseBackup(JSON.parse(readFileSync(BACKUP, 'utf8')));
+const raw = JSON.parse(readFileSync(BACKUP, 'utf8'));
+const pr = parseBackup(raw);
+const skippedNonMpesa = (raw.listSms as { adress?: unknown }[]).filter((m) => !isMpesaSender(m.adress)).length;
 const t1 = Date.now();
 const a = analyze(pr, SETTINGS);
 const t2 = Date.now();
@@ -128,6 +130,7 @@ for (const p of APPROVED.filter((x) => !used.has(x))) {
   console.log(`FAIL  stale approved delta (${p.task}, ${p.date}): ${p.section}[${p.key}].${p.field} no longer differs; remove it`);
 }
 console.log(`\n${pr.txns.length} txns from ${pr.counters.totalSms} SMS; parse ${t1 - t0} ms, analyze ${t2 - t1} ms`);
+console.log(`${skippedNonMpesa} non-M-PESA SMS skipped (sender filter)`);
 console.log(failed ? `${failed} section(s) FAILED` : 'ALL SECTIONS PASS');
 if (process.argv.includes('--details'))
   for (const f of a.flags) console.log(`- [${f.severity}] ${f.id} = ${f.value} ${f.unit}\n    ${f.detail}`);

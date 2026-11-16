@@ -215,8 +215,6 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
 
   **Out of scope.** Any other parser rule change, adding new transaction categories, changing dedupe.
 
-  **Status: BLOCKED.** `backups/sms.sms` and `reference/expected/` are absent from this checkout, so the before/after `npm run verify` requirement cannot be met.
-
 - [x] ## TASK-9 — Release checklist and README refresh
       **Goal.** Make the deploy decision mechanical, and document the local golden-test workflow for a
       future reader.
@@ -777,7 +775,7 @@ downloading charting code they do not render.
 
 ---
 
-- [ ] ## TASK-25 — Remove the stale merge checkpoint from `apex.md` step 6 _(Forge)_
+- [x] ## TASK-25 — Remove the stale merge checkpoint from `apex.md` step 6 _(Forge)_
       **Why.** `.claude/agents/apex.md` step 6 still offers
       `"User: check the preview, then say go -> Apex: merge PR #<n>"`. That contradicts the unattended
       loop in section 3 of the same file and CLAUDE.md's "never ask the user to approve a merge or a
@@ -903,3 +901,17 @@ downloading charting code they do not render.
   - The detection helper is pure and unit-tested with synthetic names; no new dependency.
 
   **Out of scope.** Auto-fixing the rules, changing matching semantics.
+
+---
+
+- [x] ## TASK-34 — Remove stale BLOCKED note from TASK-8; surface the skipped-sender count _(Forge; docs and tooling)_
+      **Why.** Filed in the PR #25 review. TASK-8 is ticked but still ended with a "Status: BLOCKED"
+      paragraph, and the PARSER_NOTES sender-filter section ended with a sentence that read as if the
+      skipped count were unknown.
+
+  **Acceptance criteria.**
+  - The stale paragraph is deleted from TASK-8, and every other ticked task was checked for the same.
+  - The last sentence of "Sender filter (TASK-8)" in `docs/PARSER_NOTES.md` describes the mechanism
+    only, with no figures.
+  - `npm run verify` prints the skipped non-M-PESA count on its own line after the headline, and the
+    headline format is unchanged.
