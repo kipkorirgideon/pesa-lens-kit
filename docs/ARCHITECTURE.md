@@ -142,11 +142,10 @@ Key properties:
   `fuliza_repay`/`fuliza_repay2` dedupe independently while mapping to one category — this is
   deliberate and matches the Python oracle.
 - A Fuliza draw legitimately shares its code with the payment it funded; dedupe must not collapse them.
-- Counters (`insufficientFunds`, `wrongPin`, `pinLocked`, `kcbLoanRequests`, `totalSms`) are computed
-  on the **raw** body of every message in `listSms`. Note: the loop does not currently filter on
-  `adress === 'MPESA' | 'M-PESA'` as SPEC §Input file describes — transaction rules are specific
-  enough that this does not affect `txns`, but the counters can over-count if the backup contains
-  look-alike messages from other senders. See TASK-8.
+- Messages whose `adress` is not `MPESA`/`M-PESA` (trimmed, case-insensitive, hyphen optional) are skipped
+  before any rule or counter runs (TASK-8). Counters (`insufficientFunds`, `wrongPin`, `pinLocked`,
+  `kcbLoanRequests`) are computed on the **raw** body of the remaining messages; `totalSms` is the number
+  of messages in the file regardless of sender.
 
 ---
 

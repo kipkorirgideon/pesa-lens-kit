@@ -5,7 +5,9 @@ import { isoMinute } from '../time';
 /** 2026-11-16T09:00:00Z, i.e. 12:00 in Nairobi. Arbitrary fixed instant. */
 export const T0 = Date.UTC(2026, 10, 16, 9, 0, 0);
 
-export const sms = (body: string, time: number = T0): RawSms => ({ adress: 'TESTSENDER', body, time });
+export const sms = (body: string, time: number = T0): RawSms => ({ adress: 'MPESA', body, time });
+/** A message from a sender that is not M-PESA; the parser must ignore it entirely. */
+export const otherSms = (body: string, adress = 'TESTSENDER', time: number = T0): RawSms => ({ adress, body, time });
 export const backup = (...bodies: string[]) => ({ listSms: bodies.map((b) => sms(b)) });
 
 export const MSG = {

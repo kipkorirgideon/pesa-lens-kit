@@ -48,3 +48,11 @@ This is a deliberate fix, so the output differs from the golden data in exactly 
 ### Baseline provenance
 
 `reference/expected/` was **not** regenerated; it still encodes the original analysis (and its mis-anchored lookahead). Instead, `scripts/verify.ts` applies a dated allow-list of exactly the moved cells, read from the git-ignored `reference/approved-deltas.json` (section, row key, field, baseline value, new value, approving task, date 2026-11-17). An allowed cell prints `PASS (approved delta: TASK-14, n cells)`; any other mismatch still fails; an entry that no longer differs fails as stale. `npm run verify` therefore prints ALL SECTIONS PASS and any further parser change is a clean pass/fail. Future deliberate deltas are appended to the same file with their task and date.
+
+## Sender filter (TASK-8)
+
+`parseBackup` now skips any message whose `adress` is not MPESA or M-PESA before doing anything else (`isMpesaSender`: trimmed, case-insensitive, hyphen optional; a missing or non-string `adress` is rejected). A skipped message feeds neither the transaction rules nor any counter, and does not take a dedupe key, so a look-alike from another sender can no longer hide a genuine message with the same code.
+
+`counters.totalSms` was **deliberately kept as "all messages in the file"** (`listSms.length`). It is a file-level figure, so it does not change when the filter does, and the `verify` headline ("N txns from M SMS") keeps meaning the same thing. The other counters are M-PESA-only. This is documented on `ParseResult` in `src/lib/types.ts`.
+
+Effect on the verified output: `npm run verify` was run before and after and printed ALL SECTIONS PASS both times with no cell changed, so no entry was added to `reference/approved-deltas.json` and the baseline was not touched. That shows non-M-PESA messages, if present, did not affect any verified number; it does not say how many there are. The dated record is in `reference/MEASUREMENTS.md` (local-only, git-ignored).

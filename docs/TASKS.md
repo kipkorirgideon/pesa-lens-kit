@@ -191,7 +191,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Out of scope.** Dark mode, i18n, redesigning charts, adding an a11y testing dependency beyond a
   dev-only `eslint-plugin-jsx-a11y` (acceptable as a devDependency).
 
-- [ ] ## TASK-8 — Restrict parsing to M-PESA senders and tighten counters
+- [x] ## TASK-8 — Restrict parsing to M-PESA senders and tighten counters
       **Goal.** Bring the parser in line with SPEC §Input file, which says to use only messages whose
       `adress` is `MPESA` or `M-PESA`; today every message in `listSms` is scanned, which can over-count
       the failure counters. Deliberately late: it is the only task that can move verified numbers.
@@ -874,3 +874,32 @@ downloading charting code they do not render.
     unchanged; no new dependency.
 
   **Out of scope.** Any change to matching semantics, and substring/"contains" matching (ruled out).
+
+- [ ] ## TASK-32 — Align the Extra bars / Extra food subtitles with the Venue-merges wording _(Forge)_
+      **Why.** Found in the PR #24 review. The Venue-merges subtitle says plainly that a payee matches when
+      its **name starts with** the text; the Extra bars and Extra food venues subtitles are less clear, so a
+      fragment from the middle of a payee name silently never matches and nothing explains why.
+
+  **Files.** `src/pages/Settings.tsx` (plus any test or e2e that asserts the copy).
+
+  **Acceptance criteria.**
+  - Both subtitles use the Venue-merges phrasing: "Any payee whose **name starts with** the text" (any
+    capitalisation, plain text, no patterns), and say that a fragment from the middle of a name will not match.
+  - No change to matching behaviour, layout at 400 px, or dependencies.
+
+  **Out of scope.** Substring matching (ruled out), any engine change.
+
+- [ ] ## TASK-33 — Surface unreachable or redundant Settings rules _(Forge)_
+      **Why.** Found in the PR #24 review. Under first-match-wins, a `venueMerges` entry whose `match` prefix
+      is preceded by an earlier, shorter prefix of it can never fire, and `extraBars` / `extraFood` can hold
+      case-variant duplicates. Both are silent today.
+
+  **Files.** `src/pages/Settings.tsx`, a small pure helper in `src/lib/` and its tests.
+
+  **Acceptance criteria.**
+  - Settings flags a `venueMerges` rule that is shadowed by an earlier rule's shorter `match` prefix, naming the rule that shadows it.
+  - Settings flags case-variant (and whitespace-variant) duplicates within `extraBars` and within `extraFood`.
+  - Informational only: nothing is deleted or reordered automatically and parsing results do not change.
+  - The detection helper is pure and unit-tested with synthetic names; no new dependency.
+
+  **Out of scope.** Auto-fixing the rules, changing matching semantics.
