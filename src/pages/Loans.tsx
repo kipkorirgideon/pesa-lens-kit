@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useAnalysis } from '../state';
 import { COLORS, dateLabel, ksh, monthLabel, monthShort, num, short } from '../lib/format';
+import { patternDefs, patternFill } from '../components/patterns';
 import { ChartCard, Kpi, Legend, PageTitle, Section, Takeaway } from '../components/ui';
 import { MoneyTooltip } from '../components/chart';
 import { axisProps, chartData, gridProps } from '../components/chartUtils';
@@ -45,6 +46,7 @@ const monthCols: Column<LoanMonthRow>[] = [
 ];
 
 export default function Loans() {
+  const pid = useId();
   const a = useAnalysis();
   const m = a.loans.monthly;
   const t = useMemo(
@@ -87,13 +89,14 @@ export default function Loans() {
       </Takeaway>
 
       <ChartCard
+        headingLevel={2}
         title="Borrowing by month"
         subtitle={
           <Legend
             items={[
               { color: COLORS.red, label: 'Fuliza drawn' },
-              { color: COLORS.orange, label: 'KCB M-PESA repayments' },
-              { color: COLORS.blue, label: 'Hustler Fund borrowed' },
+              { color: COLORS.orange, label: 'KCB M-PESA repayments', pattern: 1 },
+              { color: COLORS.blue, label: 'Hustler Fund borrowed', pattern: 2 },
             ]}
           />
         }
@@ -112,6 +115,7 @@ export default function Loans() {
       >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={m} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
+            {patternDefs(pid, [COLORS.red, COLORS.orange, COLORS.blue])}
             <CartesianGrid {...gridProps} />
             <XAxis dataKey="month" {...axisProps} tickFormatter={monthShort} minTickGap={16} />
             <YAxis {...axisProps} tickFormatter={short} width={48} />
@@ -126,14 +130,20 @@ export default function Loans() {
                 />
               }
             />
-            <Bar isAnimationActive={false} dataKey="fuliza" name="Fuliza drawn" stackId="a" fill={COLORS.red} />
-            <Bar isAnimationActive={false} dataKey="kcb_repaid" name="KCB repayments" stackId="a" fill={COLORS.orange} />
+            <Bar isAnimationActive={false} dataKey="fuliza" name="Fuliza drawn" stackId="a" fill={patternFill(pid, 0, COLORS.red)} />
+            <Bar
+              isAnimationActive={false}
+              dataKey="kcb_repaid"
+              name="KCB repayments"
+              stackId="a"
+              fill={patternFill(pid, 1, COLORS.orange)}
+            />
             <Bar
               isAnimationActive={false}
               dataKey="hustler_in"
               name="Hustler borrowed"
               stackId="a"
-              fill={COLORS.blue}
+              fill={patternFill(pid, 2, COLORS.blue)}
               radius={[2, 2, 0, 0]}
             />
           </BarChart>

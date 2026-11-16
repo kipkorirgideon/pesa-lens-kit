@@ -1,7 +1,9 @@
+import { useId } from 'react';
 import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useAnalysis } from '../state';
 import { COLORS, dateLabel, hourLabel, ksh, monthLabel, monthShort, num, pct, short } from '../lib/format';
+import { patternDefs, patternFill } from '../components/patterns';
 import { ChartCard, Kpi, Legend, PageTitle, Section, Takeaway } from '../components/ui';
 import { MoneyTooltip } from '../components/chart';
 import { axisProps, chartData, gridProps } from '../components/chartUtils';
@@ -66,10 +68,15 @@ function Stacked<T extends object>({
   countKey?: string;
   interval?: number | 'preserveStartEnd';
 }) {
+  const pid = useId();
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
         <CartesianGrid {...gridProps} />
+        {patternDefs(
+          pid,
+          SERIES.map((x) => x.color),
+        )}
         <XAxis dataKey={xKey} {...axisProps} tickFormatter={tickFormatter} interval={interval} minTickGap={8} />
         <YAxis {...axisProps} tickFormatter={short} width={48} />
         <Tooltip
@@ -83,7 +90,7 @@ function Stacked<T extends object>({
             dataKey={s.key}
             name={s.name}
             stackId="a"
-            fill={s.color}
+            fill={patternFill(pid, i, s.color)}
             radius={i === SERIES.length - 1 ? [2, 2, 0, 0] : undefined}
           />
         ))}
@@ -123,15 +130,21 @@ export default function Bars() {
         <span className="text-red-600">{ksh(s.bars)}</span> of it went to bars and lounges over {num(s.bar_nights)} nights
         {barCat && barCat.late_pct > 0 && <>, {pct(barCat.late_pct)} of it after 10 PM</>}.
       </Takeaway>
-      <Legend items={SERIES.map((x) => ({ color: x.color, label: x.name }))} />
+      <Legend items={SERIES.map((x, i) => ({ color: x.color, label: x.name, pattern: i }))} />
 
       <DataTable rows={fb.cats} columns={catCols} rowKey={(r) => r.category} filename="mpesa-food-drink-categories" />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <ChartCard title="By year" height={240} data={chartData(fb.yearly, (r) => String(r.year), 'Year', seriesOf, 'years')}>
+        <ChartCard
+          headingLevel={2}
+          title="By year"
+          height={240}
+          data={chartData(fb.yearly, (r) => String(r.year), 'Year', seriesOf, 'years')}
+        >
           <Stacked data={fb.yearly} xKey="year" countKey="payments" />
         </ChartCard>
         <ChartCard
+          headingLevel={2}
           title="By night of the week"
           subtitle="Payments before 05:00 count toward the previous night."
           height={240}
@@ -139,7 +152,12 @@ export default function Bars() {
         >
           <Stacked data={fb.dow} xKey="day" countKey="count" />
         </ChartCard>
-        <ChartCard title="By hour" height={240} data={chartData(fb.hour, (r) => hourLabel(r.hour), 'Hour', seriesOf, 'hours of the day')}>
+        <ChartCard
+          headingLevel={2}
+          title="By hour"
+          height={240}
+          data={chartData(fb.hour, (r) => hourLabel(r.hour), 'Hour', seriesOf, 'hours of the day')}
+        >
           <Stacked
             data={fb.hour}
             xKey="hour"
@@ -149,7 +167,12 @@ export default function Bars() {
             labelFormatter={(l) => `${hourLabel(Number(l))}–${String(Number(l)).padStart(2, '0')}:59`}
           />
         </ChartCard>
-        <ChartCard title="By month" height={240} data={chartData(fb.monthly, (r) => monthLabel(r.month), 'Month', seriesOf, 'months')}>
+        <ChartCard
+          headingLevel={2}
+          title="By month"
+          height={240}
+          data={chartData(fb.monthly, (r) => monthLabel(r.month), 'Month', seriesOf, 'months')}
+        >
           <Stacked
             data={fb.monthly}
             xKey="month"

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useApp, useAnalysis } from '../state';
 import { COLORS, dateLabel, ksh, normName, num, short, titleCase } from '../lib/format';
-import { ChartCard, Legend, PageTitle, Section, Segmented, Takeaway } from '../components/ui';
+import { ChartCard, Cue, Legend, PageTitle, Section, Segmented, Takeaway } from '../components/ui';
 import { MoneyTooltip } from '../components/chart';
 import { axisProps, chartData } from '../components/chartUtils';
 import { DataTable, type Column } from '../components/DataTable';
@@ -67,7 +67,12 @@ export default function People() {
         header: 'Net',
         hint: 'Received minus sent',
         value: (r) => r.net,
-        render: (r) => ksh(r.net),
+        render: (r) => (
+          <>
+            {ksh(r.net)}
+            {r.net < 0 && !excluded.has(r.name) && <Cue glyph="▼" text="net outflow: sent more than received" />}
+          </>
+        ),
         align: 'right',
         cellClass: (r) => (r.net < 0 && !excluded.has(r.name) ? 'text-red-600 font-medium' : 'font-medium'),
       },
@@ -106,6 +111,7 @@ export default function People() {
       </div>
 
       <ChartCard
+        headingLevel={2}
         title={`Top 15 by ${mode === 'sent' ? 'money sent' : 'money received'}`}
         subtitle={
           <Legend

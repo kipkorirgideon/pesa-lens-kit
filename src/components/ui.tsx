@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import type { Flag } from '../lib/types';
 import { SEVERITY_TEXT } from './severity';
+import { patternElement, patternId } from './patterns';
 
 /** Text alternative for a chart: pre-formatted table cells plus a one-sentence summary. */
 export interface ChartData {
@@ -16,6 +17,7 @@ export function ChartCard({
   height = 280,
   className = '',
   data,
+  headingLevel = 3,
 }: {
   title: string;
   subtitle?: ReactNode;
@@ -24,10 +26,13 @@ export function ChartCard({
   className?: string;
   /** Text alternative: the chart is described by `data.summary` and the same numbers sit in a table below it. */
   data?: ChartData;
+  /** Heading level of the title: 2 when the card sits directly under the page h1, 3 inside a Section. */
+  headingLevel?: 2 | 3;
 }) {
+  const Heading = `h${headingLevel}` as const;
   return (
     <section className={`min-w-0 rounded-lg border border-gray-200 bg-white p-3 sm:p-4 ${className}`}>
-      <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+      <Heading className="text-sm font-semibold text-gray-900">{title}</Heading>
       {subtitle && <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>}
       <div
         className="mt-3"
@@ -44,7 +49,10 @@ export function ChartCard({
 function ChartTable({ title, data }: { title: string; data: ChartData }) {
   return (
     <details className="mt-2 text-sm">
-      <summary className="cursor-pointer text-xs font-medium text-gray-600 hover:text-gray-900">View the data behind this chart</summary>
+      <summary className="cursor-pointer text-xs font-medium text-gray-600 hover:text-gray-900">
+        View the data behind this chart
+        <span className="ml-1 font-normal text-gray-500">(same numbers; works with a keyboard)</span>
+      </summary>
       <div
         tabIndex={0}
         role="region"
@@ -141,6 +149,10 @@ export function PageTitle({ title, subtitle }: { title: string; subtitle?: React
   );
 }
 
+/**
+ * Single-select control as a WAI-ARIA radiogroup: the checked radio is the only tab stop (roving
+ * tabindex), Left/Up and Right/Down move AND select with wraparound, and focus follows selection.
+ */
 export function Segmented<V extends string>({
   value,
   options,
@@ -152,14 +164,40 @@ export function Segmented<V extends string>({
   onChange: (v: V) => void;
   label: string;
 }) {
+  const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  const checked = options.findIndex((o) => o.value === value);
+  // If `value` matches nothing, keep the group reachable by making the first radio the tab stop.
+  const stop = checked < 0 ? 0 : checked;
+
+  const select = (i: number) => {
+    const n = options.length;
+    const next = ((i % n) + n) % n;
+    onChange(options[next].value);
+    refs.current[next]?.focus();
+  };
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') select(i + 1);
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') select(i - 1);
+    else if (e.key === 'Home') select(0);
+    else if (e.key === 'End') select(options.length - 1);
+    else return;
+    e.preventDefault();
+  };
+
   return (
-    <div role="group" aria-label={label} className="inline-flex shrink-0 rounded-md border border-gray-300 p-0.5 text-xs">
-      {options.map((o) => (
+    <div role="radiogroup" aria-label={label} className="inline-flex shrink-0 rounded-md border border-gray-300 p-0.5 text-xs">
+      {options.map((o, i) => (
         <button
           key={o.value}
+          ref={(el) => {
+            refs.current[i] = el;
+          }}
           type="button"
-          aria-pressed={o.value === value}
+          role="radio"
+          aria-checked={o.value === value}
+          tabIndex={i === stop ? 0 : -1}
           onClick={() => onChange(o.value)}
+          onKeyDown={(e) => onKeyDown(e, i)}
           className={`whitespace-nowrap rounded px-2.5 py-1 font-medium ${o.value === value ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
         >
           {o.label}
@@ -173,15 +211,43 @@ export function SeverityLabel({ severity }: { severity: Flag['severity'] }) {
   return <span className={`text-xs font-semibold uppercase tracking-wide ${SEVERITY_TEXT[severity]}`}>{severity}</span>;
 }
 
-export function Legend({ items }: { items: { color: string; label: string }[] }) {
+export function Legend({ items }: { items: { color: string; label: string; pattern?: number }[] }) {
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
       {items.map((i) => (
         <span key={i.label} className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: i.color }} />
+          <Swatch color={i.color} pattern={i.pattern} />
           {i.label}
         </span>
       ))}
     </div>
+  );
+}
+
+/** Legend key that matches the chart fill: solid, or the same pattern the series uses. */
+function Swatch({ color, pattern }: { color: string; pattern?: number }) {
+  const uid = useId();
+  if (!pattern) return <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: color }} />;
+  const id = patternId(uid, pattern);
+  return (
+    <svg aria-hidden="true" focusable="false" width="10" height="10" className="rounded-sm">
+      <defs>{patternElement(id, pattern, color)}</defs>
+      <rect width="10" height="10" fill={`url(#${id})`} />
+    </svg>
+  );
+}
+
+/**
+ * Non-colour marker for a table cell that is red for a reason: a glyph for sighted monochrome users
+ * plus visually hidden text for screen readers. `sr-only` is clip-based, not display:none, so it is announced.
+ */
+export function Cue({ glyph, text }: { glyph: string; text: string }) {
+  return (
+    <>
+      <span aria-hidden="true" className="ml-1 text-[0.7em]">
+        {glyph}
+      </span>
+      <span className="sr-only">, {text}</span>
+    </>
   );
 }

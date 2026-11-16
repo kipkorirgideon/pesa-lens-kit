@@ -1,15 +1,25 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { useState } from 'react';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { DataTable, type Column } from './DataTable';
 import { Picker } from './Picker';
-import { ChartCard, Segmented, SeverityLabel } from './ui';
+import { ChartCard, Cue, Legend, Segmented, SeverityLabel } from './ui';
+import { patternDefs, patternFill, patternId } from './patterns';
 import { chartData } from './chartUtils';
 import Upload from '../pages/Upload';
 import { AppCtx, type AppState } from '../state';
 import { COLORS } from '../lib/format';
 import { DEFAULT_SETTINGS } from '../lib/types';
+import { analyze } from '../lib/analyze';
+import { nairobi, parseResult, txn } from '../lib/__fixtures__/messages';
+import Overview from '../pages/Overview';
+import Loans from '../pages/Loans';
+import Payees from '../pages/Payees';
+import People from '../pages/People';
+import Bars from '../pages/Bars';
+import Flags from '../pages/Flags';
 
 afterEach(cleanup);
 
@@ -95,26 +105,139 @@ describe('Picker', () => {
   });
 });
 
-describe('Segmented', () => {
-  it('uses toggle buttons with aria-pressed inside a labelled group', () => {
-    const onChange = vi.fn();
-    render(
+describe('Segmented (radiogroup)', () => {
+  const opts = [
+    { value: 'a', label: 'A' },
+    { value: 'b', label: 'B' },
+    { value: 'c', label: 'C' },
+  ];
+  /** Controlled wrapper so selection actually moves, as it does in the pages. */
+  function Harness({ onChange = () => {}, initial = 'a' }: { onChange?: (v: string) => void; initial?: string }) {
+    const [v, setV] = useState(initial);
+    return (
       <Segmented
         label="Rank by"
-        value="a"
-        onChange={onChange}
-        options={[
-          { value: 'a', label: 'A' },
-          { value: 'b', label: 'B' },
+        value={v}
+        options={opts}
+        onChange={(x) => {
+          setV(x);
+          onChange(x);
+        }}
+      />
+    );
+  }
+  const radio = (name: string) => screen.getByRole('radio', { name });
+  const checkedLabel = () => screen.getAllByRole('radio').find((r) => r.getAttribute('aria-checked') === 'true')?.textContent;
+
+  it('is a labelled radiogroup of radios with aria-checked, not aria-pressed toggles', () => {
+    render(<Harness />);
+    const group = screen.getByRole('radiogroup', { name: 'Rank by' });
+    expect(within(group).getAllByRole('radio')).toHaveLength(3);
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(radio('A').getAttribute('aria-checked')).toBe('true');
+    expect(radio('B').getAttribute('aria-checked')).toBe('false');
+    expect(group.querySelector('[aria-pressed]')).toBeNull();
+  });
+
+  it('uses a roving tabindex: only the checked radio is a tab stop', () => {
+    render(<Harness initial="b" />);
+    expect(screen.getAllByRole('radio').map((r) => r.getAttribute('tabindex'))).toEqual(['-1', '0', '-1']);
+  });
+
+  it('selects on click and moves the tab stop with it', () => {
+    const onChange = vi.fn();
+    render(<Harness onChange={onChange} />);
+    fireEvent.click(radio('C'));
+    expect(onChange).toHaveBeenCalledWith('c');
+    expect(radio('C').getAttribute('aria-checked')).toBe('true');
+    expect(screen.getAllByRole('radio').map((r) => r.getAttribute('tabindex'))).toEqual(['-1', '-1', '0']);
+  });
+
+  it('ArrowRight and ArrowDown select the next radio and move focus to it', () => {
+    const onChange = vi.fn();
+    render(<Harness onChange={onChange} />);
+    radio('A').focus();
+    fireEvent.keyDown(radio('A'), { key: 'ArrowRight' });
+    expect(onChange).toHaveBeenLastCalledWith('b');
+    expect(checkedLabel()).toBe('B');
+    expect(document.activeElement).toBe(radio('B'));
+    fireEvent.keyDown(radio('B'), { key: 'ArrowDown' });
+    expect(checkedLabel()).toBe('C');
+    expect(document.activeElement).toBe(radio('C'));
+  });
+
+  it('ArrowLeft and ArrowUp select the previous radio and move focus to it', () => {
+    render(<Harness initial="c" />);
+    radio('C').focus();
+    fireEvent.keyDown(radio('C'), { key: 'ArrowLeft' });
+    expect(checkedLabel()).toBe('B');
+    expect(document.activeElement).toBe(radio('B'));
+    fireEvent.keyDown(radio('B'), { key: 'ArrowUp' });
+    expect(checkedLabel()).toBe('A');
+    expect(document.activeElement).toBe(radio('A'));
+  });
+
+  it('wraps around at both ends', () => {
+    render(<Harness initial="c" />);
+    radio('C').focus();
+    fireEvent.keyDown(radio('C'), { key: 'ArrowRight' });
+    expect(checkedLabel()).toBe('A');
+    expect(document.activeElement).toBe(radio('A'));
+    fireEvent.keyDown(radio('A'), { key: 'ArrowLeft' });
+    expect(checkedLabel()).toBe('C');
+    expect(document.activeElement).toBe(radio('C'));
+  });
+
+  it('Home and End jump to the ends; unrelated keys do nothing', () => {
+    const onChange = vi.fn();
+    render(<Harness onChange={onChange} initial="b" />);
+    radio('B').focus();
+    fireEvent.keyDown(radio('B'), { key: 'a' });
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.keyDown(radio('B'), { key: 'End' });
+    expect(checkedLabel()).toBe('C');
+    fireEvent.keyDown(radio('C'), { key: 'Home' });
+    expect(checkedLabel()).toBe('A');
+  });
+
+  it('keeps the group reachable when value matches no option', () => {
+    render(<Harness initial="zzz" />);
+    expect(screen.getAllByRole('radio').map((r) => r.getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
+  });
+});
+
+describe('colour-only cues', () => {
+  it('Cue pairs a hidden glyph with screen-reader text that is not display:none', () => {
+    render(<Cue glyph="▲" text="up on prior 12 months" />);
+    const text = screen.getByText(/up on prior 12 months/);
+    expect(text.className).toContain('sr-only');
+    expect(text.closest('[aria-hidden="true"]')).toBeNull();
+    expect(screen.getByText('▲').getAttribute('aria-hidden')).toBe('true');
+  });
+});
+
+describe('patterns', () => {
+  it('first series is solid; later ones reference a defined pattern id with no colons', () => {
+    expect(patternFill('x:1:', 0, '#123456')).toBe('#123456');
+    const f = patternFill('x:1:', 1, '#123456');
+    expect(f).toBe(`url(#${patternId('x:1:', 1)})`);
+    expect(f).not.toContain(':');
+    const { container } = render(<svg>{patternDefs('x:1:', ['#111111', '#222222', '#333333'])}</svg>);
+    expect(container.querySelectorAll('pattern')).toHaveLength(2);
+    expect(container.querySelector(`#${patternId('x:1:', 2)}`)).toBeTruthy();
+  });
+
+  it('a Legend swatch with a pattern is an aria-hidden svg; a plain one is a coloured box', () => {
+    const { container } = render(
+      <Legend
+        items={[
+          { color: '#111111', label: 'One' },
+          { color: '#222222', label: 'Two', pattern: 1 },
         ]}
       />,
     );
-    const group = screen.getByRole('group', { name: 'Rank by' });
-    expect(within(group).getByRole('button', { name: 'A' }).getAttribute('aria-pressed')).toBe('true');
-    const b = within(group).getByRole('button', { name: 'B' });
-    expect(b.getAttribute('aria-pressed')).toBe('false');
-    fireEvent.click(b);
-    expect(onChange).toHaveBeenCalledWith('b');
+    expect(container.querySelectorAll('svg[aria-hidden="true"]')).toHaveLength(1);
+    expect(container.querySelectorAll('span.inline-block')).toHaveLength(1);
   });
 });
 
@@ -142,6 +265,27 @@ describe('charts', () => {
     const t = screen.getByRole('table', { hidden: true });
     expect(within(t).getByRole('rowheader', { name: 'Beta Bar', hidden: true })).toBeTruthy();
     expect(within(t).getByText('KSh 100')).toBeTruthy();
+  });
+
+  it('ChartCard heading level is configurable (default h3, h2 under the page title)', () => {
+    const { rerender } = render(<ChartCard title="T">x</ChartCard>);
+    expect(screen.getByRole('heading', { name: 'T' }).tagName).toBe('H3');
+    rerender(
+      <ChartCard title="T" headingLevel={2}>
+        x
+      </ChartCard>,
+    );
+    expect(screen.getByRole('heading', { name: 'T' }).tagName).toBe('H2');
+  });
+
+  it('points keyboard users at the data table, the intended keyboard path for charts', () => {
+    render(
+      <ChartCard title="Spend by shop" data={data}>
+        <svg />
+      </ChartCard>,
+    );
+    expect(screen.getByText(/works with a keyboard/)).toBeTruthy();
+    expect(screen.getByText(/View the data behind this chart/).closest('summary')).toBeTruthy();
   });
 });
 
@@ -221,5 +365,66 @@ describe('Upload', () => {
     const { container } = renderUpload({ loadError: 'That file is empty.' });
     expect(container.querySelector('[aria-busy="false"]')).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toContain('That file is empty.');
+  });
+});
+
+describe('heading order on every page that uses ChartCard', () => {
+  const NONE = { excludedPeople: [], extraBars: [] };
+  const at = nairobi(2026, 5, 10, 23);
+  const txns = [
+    txn('send_person', nairobi(2026, 3, 1), 15000, { name: 'Beth Sample', phone: '0700000003' }),
+    txn('recv_person', nairobi(2026, 3, 2), 500, { name: 'Beth Sample', phone: '0700000003' }),
+    txn('till', at, 900, { name: 'Sample Lounge' }),
+    txn('till', nairobi(2025, 5, 10, 23), 400, { name: 'Sample Lounge' }),
+    txn('send_paybill', at, 700, { name: 'Test Paybill' }),
+    txn('fuliza_draw', at, 2000, { fee: 20 }),
+    txn('kcb_repay', at, 300),
+  ];
+  const analysis = analyze(parseResult(txns), NONE);
+  const state: AppState = {
+    parse: null,
+    analysis,
+    analysisError: null,
+    settings: DEFAULT_SETTINGS,
+    setSettings: () => {},
+    loading: false,
+    loadError: null,
+    fileName: null,
+    loadFile: async () => false,
+    reset: () => {},
+  };
+  const pages: [string, () => JSX.Element][] = [
+    ['Overview', Overview],
+    ['Loans', Loans],
+    ['Payees', Payees],
+    ['People', People],
+    ['Bars', Bars],
+    ['Flags', Flags],
+  ];
+
+  beforeAll(() => {
+    // Recharts' ResponsiveContainer needs ResizeObserver, which jsdom lacks.
+    globalThis.ResizeObserver ??= class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  });
+
+  it.each(pages)('%s: one h1 first, and no heading level is skipped', (_name, Page) => {
+    const { container } = render(
+      <MemoryRouter>
+        <AppCtx.Provider value={state}>
+          <Page />
+        </AppCtx.Provider>
+      </MemoryRouter>,
+    );
+    const levels = [...container.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((h) => Number(h.tagName[1]));
+    expect(levels[0]).toBe(1);
+    expect(levels.filter((l) => l === 1)).toHaveLength(1);
+    levels.forEach((l, i) => {
+      if (i > 0) expect(l, `h${l} follows h${levels[i - 1]}`).toBeLessThanOrEqual(levels[i - 1] + 1);
+    });
+    expect(levels.length).toBeGreaterThan(2);
   });
 });
