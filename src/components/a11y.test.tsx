@@ -457,6 +457,8 @@ describe('heading order on every page that uses ChartCard', () => {
       const flagged = c.className.includes('text-red-600');
       expect(c.textContent?.includes('overdraft used this month')).toBe(flagged);
       expect(c.textContent?.includes('▲')).toBe(false);
+      // sighted-monochrome half: the glyph itself must be present (and hidden from screen readers) when flagged
+      expect(c.querySelector('[aria-hidden="true"]')?.textContent ?? null).toBe(flagged ? '●' : null);
     });
   });
 
@@ -468,11 +470,20 @@ describe('heading order on every page that uses ChartCard', () => {
   });
 
   it('every page: no duplicate <pattern> ids', () => {
+    const counts: Record<string, number> = {};
     pages.forEach(([name, Page]) => {
       const { container, unmount } = renderPage(Page);
       const ids = [...container.querySelectorAll('pattern')].map((p) => p.id);
       expect(new Set(ids).size, name).toBe(ids.length);
+      counts[name] = ids.length;
       unmount();
     });
+    // Non-vacuity: several pages render no patterns, so a per-page minimum would be wrong. Guard the total (17 with a working stub, 5 with a no-layout one)
+    // and the pages known to chart multiple series, so a no-layout ResizeObserver stub fails loudly.
+    expect(
+      Object.values(counts).reduce((a, b) => a + b, 0),
+      JSON.stringify(counts),
+    ).toBeGreaterThanOrEqual(10);
+    expect(counts.Payees, 'Payees renders two patterned charts').toBeGreaterThanOrEqual(2);
   });
 });

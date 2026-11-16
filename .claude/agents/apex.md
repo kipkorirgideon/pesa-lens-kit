@@ -34,6 +34,7 @@ When asked to plan a project or feature:
    NOTES: <one paragraph>
    ```
    Set `DEPLOY: YES` only when approved AND the change is user-visible or the release checklist in TASKS.md says so.
+   `DEPLOY: NO` means the change is not user-visible (tests, docs, tooling), so no smoke test is needed — it is not an error. It does **not** mean nothing was deployed: every merge to `main` auto-creates a production deployment, so Harbor runs the unauthenticated 302 exposure check on it after **every** merge and reports the result, whatever the `DEPLOY` value says.
 6. End your reply with one line the main session acts on: **"User: check the preview, then say go → Apex: merge PR #<n>"** or **"Forge: address review on PR #<n>"**.
 
 ### 3. Merge (same run as the review — the loop is unattended)

@@ -663,7 +663,7 @@ downloading charting code they do not render.
 
   **Out of scope.** Committing handoff files, changing `.gitignore`, any source change.
 
-- [ ] ## TASK-22 — Propagate the post-auto-deploy `DEPLOY: YES/NO` convention _(Forge)_
+- [x] ## TASK-22 — Propagate the post-auto-deploy `DEPLOY: YES/NO` convention _(Forge)_
       **Why.** Vercel's Git integration auto-deploys `main` on every merge, so `DEPLOY: NO` no longer
       means "no deployment happened" — a docs-only merge still publishes a production build carrying
       `src/profile.ts`. Apex ruled (PR #12) that `DEPLOY` keeps meaning "is this user-visible / worth a
@@ -706,6 +706,15 @@ downloading charting code they do not render.
 
   **Out of scope.** Re-opening the `accessibilityLayer` decision (that is TASK-24 below), any change
   to the cues TASK-19 already shipped, any new dependency.
+
+  **Follow-up test hardening (done alongside TASK-22; recorded by Apex on PR #16 as non-blocking).**
+  - The Loans cue test now asserts the glyph itself (`[aria-hidden="true"]` text is `●` on flagged cells,
+    absent otherwise). Proven: with `glyph=""` the suite went 1 failed / 35 passed (was all green);
+    restored, 36 passed.
+  - The all-pages duplicate-id sweep now has a non-vacuity guard: a total across pages (>= 10; 17 with
+    the working `ResizeObserver` stub, 5 with a no-layout one) plus Payees >= 2. A per-page minimum would
+    be wrong because Overview, People and Flags render no patterns. Proven: with the no-layout stub the
+    sweep fails (5 < 10, Payees 1 < 2); restored, 36 passed.
 
 - [ ] ## TASK-24 _(optional)_ — Re-examine Recharts `accessibilityLayer` with a restructured wrapper
       **Why.** TASK-19 rejected `accessibilityLayer` on measured evidence (Apex reproduced it in PR #13:
