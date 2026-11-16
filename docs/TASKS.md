@@ -671,7 +671,7 @@ downloading charting code they do not render.
   **Out of scope.** Changing the handoff file format or field names, any `src/` change, anything to do
   with TASK-5 or SSO settings themselves.
 
-- [ ] ## TASK-23 — Residual colour-only cue on Loans, duplicate pattern ids on Payees _(Forge)_
+- [x] ## TASK-23 — Residual colour-only cue on Loans, duplicate pattern ids on Payees _(Forge)_
       **Why.** Recorded by Apex during the PR #13 (TASK-19) review; both were found, neither was in
       TASK-19's acceptance criteria, so TASK-19 merged without them.
 

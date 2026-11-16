@@ -3,7 +3,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useAnalysis } from '../state';
 import { COLORS, dateLabel, ksh, monthLabel, monthShort, num, short } from '../lib/format';
 import { patternDefs, patternFill } from '../components/patterns';
-import { ChartCard, Kpi, Legend, PageTitle, Section, Takeaway } from '../components/ui';
+import { ChartCard, Cue, Kpi, Legend, PageTitle, Section, Takeaway } from '../components/ui';
 import { MoneyTooltip } from '../components/chart';
 import { axisProps, chartData, gridProps } from '../components/chartUtils';
 import { DataTable, type Column } from '../components/DataTable';
@@ -32,7 +32,12 @@ const monthCols: Column<LoanMonthRow>[] = [
     key: 'fuliza',
     header: 'Fuliza drawn',
     value: (r) => r.fuliza,
-    render: (r) => ksh(r.fuliza),
+    render: (r) => (
+      <>
+        {ksh(r.fuliza)}
+        {r.fuliza > 0 && <Cue glyph="●" text="overdraft used this month" />}
+      </>
+    ),
     align: 'right',
     cellClass: (r) => (r.fuliza > 0 ? 'text-red-600' : ''),
   },
