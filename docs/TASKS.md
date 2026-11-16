@@ -438,6 +438,18 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
     each tab has no skipped level. (e) Confirm each chart is a single stop for the accessibility tree
     and that "View the data behind this chart (same numbers; works with a keyboard)" is the discoverable
     keyboard path, since charts are deliberately not focusable.
+  - **TASK-23 additions to that same pass (code-reasoned, not observed; recorded by Apex at the PR #16
+    review so they are not lost).** (f) Under "Emulate vision deficiency: Achromatopsia" or a
+    greyscale filter, the Loans "Fuliza drawn" cells that are red still read as flagged: each carries
+    a small filled circle after the amount. The circle is deliberately directionless (the cell states
+    that an overdraft was drawn in that month, not that anything rose), so check it reads as a flag
+    and not as a bullet or a stray glyph, and that it stays legible at 400 px and at the table's
+    0.7em size. (g) With a screen reader, such a cell announces ", overdraft used this month" after
+    the amount; confirm the pause and the ordering sound right next to the neighbouring ", up on
+    prior 12 months" cells, which use the same `Cue` component. (h) On Paybills & tills, the "By day"
+    and "By hour" charts now carry different pattern ids (`pat-<id>-dow-*`, `pat-<id>-hour-*`) after a
+    duplicate-id bug; confirm in a real browser that both charts' second series actually show the
+    stripe fill, since a broken `url(#id)` reference renders as transparent, not as an error.
   - If any violation appears, record the offending directive here and open a follow-up PR; do not
     loosen the CSP beyond the single directive that is actually required.
 
