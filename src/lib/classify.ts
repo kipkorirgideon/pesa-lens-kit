@@ -1,8 +1,10 @@
 // Payee classification (port of reference/python/bars.py) and small shared helpers.
 import type { FbCategory } from './types';
 
-// Bars / lounges / clubs. "BAR" but not "MILK BAR"; "LOUNGE" but not a barber's ("KINYOZI").
-const BAR = /\bBAR\b(?!.*MILK)|LOUNGE(?!.*KINYOZI)|\bPUB\b|WINES?\b|LIQUOR|SPIRITS|\bCLUB\b|GARDENS|ROOFTOP|RESORT/i;
+// Bars / lounges / clubs. "BAR" but not "MILK BAR" in either word order: the lookbehind rejects a BAR that
+// directly follows MILK, the lookahead keeps rejecting a BAR that is followed by MILK. Only the BAR keyword is
+// affected, so other bar words in the same name (e.g. WINES) still match. "LOUNGE" but not a barber's ("KINYOZI").
+const BAR = /(?<!\bMILK )\bBAR\b(?!.*MILK)|LOUNGE(?!.*KINYOZI)|\bPUB\b|WINES?\b|LIQUOR|SPIRITS|\bCLUB\b|GARDENS|ROOFTOP|RESORT/i;
 // Restaurants, hotels, cafes, fast food.
 const FOOD =
   /RESTAURANT|HOTEL|\bCAFE|CAFFE|KITCHEN|CATERER|\bFOODS?\b|PIZZA|\bKFC\b|CHICKEN|JAVA|GRILL|CHOMA|ROAST|EATERY|SNACK|MILK BAR|DOMINO|FOOD COURT|\bREST\b|FISH PALACE|BIG FISH|DINE/i;

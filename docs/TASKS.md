@@ -333,7 +333,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
 
   **Out of scope.** Rewriting the rule table, the sender filter (TASK-8), dedupe (TASK-12).
 
-- [ ] ## TASK-14 — `MILK BAR` must classify as food, not a bar
+- [x] ## TASK-14 — `MILK BAR` must classify as food, not a bar
       **Why:** found while reviewing PR #3 (TASK-3). `docs/SPEC.md` §Definitions says bars match
       `\bBAR\b` **(not "MILK BAR")** and lists `MILK BAR` under restaurants & food, but the
       implementation in `src/lib/classify.ts` is
@@ -345,6 +345,9 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Files.** `src/lib/classify.ts`, `src/lib/classify.test.ts`, possibly `docs/PARSER_NOTES.md`.
 
   **Acceptance criteria.**
+  - **Done.** The BAR keyword now has a lookbehind (`(?<!\bMILK )\bBAR\b`) alongside the existing
+    lookahead, so MILK on either side of BAR rejects that keyword only; other bar words (`WINES`, ...)
+    still match. `npm run verify` moved by design: see `docs/PARSER_NOTES.md` "MILK BAR classification".
   - `classifyPayee('SAMPLE MILK BAR')` returns `'Restaurants, hotels & food'`; `classifyPayee('SAMPLE BAR')`
     still returns `'Bars & lounges'`; the `NOT_FB`, `LOUNGE`/`KINYOZI`, butchery-before-food and
     `extraBars` behaviours are unchanged (existing classify tests stay green untouched).
@@ -515,6 +518,9 @@ golden data will expose, so settle them *before* interpreting a verify failure a
       **Baseline:** `npm run verify` passes on TASK-5's code only when `reference/settings.json` lists
       every payee variant by exact name (the PR #5 rulings); partial names there do not match. Do not
       start before that exact-name baseline is confirmed.
+      **Measured cost of the current exact matching (TASK-28):** see `docs/PARSER_NOTES.md`
+      "Removing the hard-coded extraBarPattern". Until this task lands, one venue with several till
+      spellings must be added to `extraBars` once per spelling.
 
   **Files.** `src/lib/classify.ts`, `src/lib/analyze.ts` (the `extraBars` Set is built there and
   strips a `Paybill|`/`Till / Buy Goods|` key prefix — that normalisation must survive),
@@ -787,3 +793,7 @@ downloading charting code they do not render.
   owner can change them. Agents must not attempt it. Do not rename the existing CI job.
 
   **Acceptance criteria.** `e2e (playwright)` is listed among required status checks for `main`.
+
+- [x] ## TASK-28 — Record the measured effect of removing `PROFILE.extraBarPattern` _(Forge; docs only)_
+      **Why.** Mandated by Apex in the PR #5 review so the mechanism is on record and not re-framed as
+      "`extraBars` became stricter" (it did not). Recorded in `docs/PARSER_NOTES.md` and TASK-17.

@@ -30,3 +30,15 @@ The golden data was produced with personal classification values (excluded peopl
 ```
 
 If the file is absent, empty defaults are used and sections that depended on personal values will differ from the golden data. Matching is plain text, case-insensitive, by prefix (an exact name is a prefix of itself); there is no RegExp support anywhere in settings. `extraBars` remains an exact (upper-cased) name match.
+
+## Removing the hard-coded `extraBarPattern` (TASK-5, recorded under TASK-28)
+
+Before TASK-5, `src/profile.ts` carried a hard-coded regex (`PROFILE.extraBarPattern`) that classed payees as bars by **substring**. TASK-5 deleted it, because it compiled personal names into the bundle. `settings.extraBars` was **not** changed by TASK-5: it was already, on `main`, an exact upper-cased `Set` lookup, and it still is. What changed is that the regex's substring effect is gone and must now be reproduced by enumerating exact payee spellings in `extraBars`.
+
+Measured when `reference/settings.json` held *partial* names (which an exact lookup cannot match): 7 of the 19 `verify` sections moved: `fb_summary`, `fb_cats`, `fb_venues`, `fb_yearly`, `fb_dow`, `drain_bars`, and one `flags` value. Bars came to 258,310 against 342,700 expected, 180 payments against 252, and 33 venues against 36. With every payee spelling listed exactly, `verify` passed.
+
+Practical consequence: one venue with several till spellings must currently be added once per spelling. TASK-17 (prefix matching for `extraBars`) would remove that. It is not a regression in `extraBars` semantics.
+
+## MILK BAR classification (TASK-14)
+
+The old bar pattern `\bBAR\b(?!.*MILK)` only looked *forward* for MILK, so a name with MILK before BAR was classed as a bar. The pattern is now `(?<!\bMILK )\bBAR\b(?!.*MILK)`: MILK on either side of the BAR keyword stops that keyword matching, and the name falls through to the food rule (`MILK BAR`). Other bar keywords in the same name still win. This is a deliberate fix, so `verify` no longer matches the golden data for these sections: one real venue's payments (2 payments, KSh 1,260) move from Bars & lounges to Restaurants, hotels & food. Affected sections and the exact deltas are in the TASK-14 PR description; `fb_cats` payments 252 -> 250 (bars) and 317 -> 319 (food). The baseline in `reference/expected/` was deliberately not regenerated.
