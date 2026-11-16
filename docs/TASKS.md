@@ -145,7 +145,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Out of scope.** Import/export of settings as a file, multi-profile support, renaming any field in
   `Analysis`.
 
-- [ ] ## TASK-6 — Route-level code splitting to get the entry chunk under 500 kB
+- [x] ## TASK-6 — Route-level code splitting to get the entry chunk under 500 kB
       **Goal.** Stop shipping Recharts to the Upload screen; cut first load for a user who has not yet
       dropped a file.
 

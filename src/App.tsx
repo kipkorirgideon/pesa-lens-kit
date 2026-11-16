@@ -1,15 +1,33 @@
-import { useEffect, useRef } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useApp } from './state';
 import { dateLabel, num } from './lib/format';
 import Upload from './pages/Upload';
-import Overview from './pages/Overview';
-import Flags from './pages/Flags';
-import People from './pages/People';
-import Payees from './pages/Payees';
-import Bars from './pages/Bars';
-import Loans from './pages/Loans';
-import SettingsPage from './pages/Settings';
+const Overview = lazy(() => import('./pages/Overview'));
+const Flags = lazy(() => import('./pages/Flags'));
+const People = lazy(() => import('./pages/People'));
+const Payees = lazy(() => import('./pages/Payees'));
+const Bars = lazy(() => import('./pages/Bars'));
+const Loans = lazy(() => import('./pages/Loans'));
+const SettingsPage = lazy(() => import('./pages/Settings'));
+
+/**
+ * Suspense fallback for lazy pages. Waits briefly before showing anything so fast loads
+ * never flash; reserves height so the footer does not jump. Lives inside <main>, so the
+ * sticky header and tab bar are never affected.
+ */
+function PageFallback() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setShow(true), 200);
+    return () => window.clearTimeout(t);
+  }, []);
+  return (
+    <div role="status" aria-live="polite" className="min-h-[60vh] py-10 text-sm text-gray-500">
+      {show ? 'Loading…' : null}
+    </div>
+  );
+}
 
 const TABS = [
   { to: '/overview', label: 'Overview' },
@@ -79,23 +97,25 @@ export default function App() {
         )}
       </header>
       <main className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-6">
-        <Routes>
-          <Route path="/" element={<Upload />} />
-          {loaded ? (
-            <>
-              <Route path="/overview" element={<Overview />} />
-              <Route path="/flags" element={<Flags />} />
-              <Route path="/people" element={<People />} />
-              <Route path="/payees" element={<Payees />} />
-              <Route path="/bars" element={<Bars />} />
-              <Route path="/loans" element={<Loans />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="*" element={<Navigate to="/overview" replace />} />
-            </>
-          ) : (
-            <Route path="*" element={<Navigate to="/" replace />} />
-          )}
-        </Routes>
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
+            <Route path="/" element={<Upload />} />
+            {loaded ? (
+              <>
+                <Route path="/overview" element={<Overview />} />
+                <Route path="/flags" element={<Flags />} />
+                <Route path="/people" element={<People />} />
+                <Route path="/payees" element={<Payees />} />
+                <Route path="/bars" element={<Bars />} />
+                <Route path="/loans" element={<Loans />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="*" element={<Navigate to="/overview" replace />} />
+              </>
+            ) : (
+              <Route path="*" element={<Navigate to="/" replace />} />
+            )}
+          </Routes>
+        </Suspense>
       </main>
       <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs text-gray-400 sm:px-6">
         Processed on this device only — nothing is uploaded.
