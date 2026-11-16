@@ -32,8 +32,13 @@ function TabBar() {
   return (
     <nav ref={ref} aria-label="Sections" className="no-scrollbar -mb-px flex gap-1 overflow-x-auto px-3 sm:px-6">
       {TABS.map((t) => (
-        <NavLink key={t.to} to={t.to}
-          className={({ isActive }) => `shrink-0 whitespace-nowrap border-b-2 px-2.5 py-2 text-sm ${isActive ? 'border-gray-900 font-medium text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
+        <NavLink
+          key={t.to}
+          to={t.to}
+          className={({ isActive }) =>
+            `shrink-0 whitespace-nowrap border-b-2 px-2.5 py-2 text-sm ${isActive ? 'border-gray-900 font-medium text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-800'}`
+          }
+        >
           {t.label}
         </NavLink>
       ))}
@@ -44,22 +49,34 @@ function TabBar() {
 export default function App() {
   const { analysis } = useApp();
   const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   const loaded = !!analysis;
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 px-4 pb-1 pt-3 sm:px-6">
-          <Link to={loaded ? '/overview' : '/'} className="text-base font-semibold tracking-tight">M-PESA money flow</Link>
+          <Link to={loaded ? '/overview' : '/'} className="text-base font-semibold tracking-tight">
+            M-PESA money flow
+          </Link>
           {analysis && (
             <div className="flex items-baseline gap-3 text-xs text-gray-500">
-              <span className="tabular-nums">{dateLabel(analysis.summary.first)} – {dateLabel(analysis.summary.last)} · {num(analysis.summary.transactions)} transactions</span>
-              <Link to="/" className="whitespace-nowrap text-gray-600 underline decoration-gray-300 underline-offset-2 hover:text-gray-900">New file</Link>
+              <span className="tabular-nums">
+                {dateLabel(analysis.summary.first)} – {dateLabel(analysis.summary.last)} · {num(analysis.summary.transactions)} transactions
+              </span>
+              <Link to="/" className="whitespace-nowrap text-gray-600 underline decoration-gray-300 underline-offset-2 hover:text-gray-900">
+                New file
+              </Link>
             </div>
           )}
         </div>
-        {loaded && <div className="mx-auto max-w-6xl"><TabBar /></div>}
+        {loaded && (
+          <div className="mx-auto max-w-6xl">
+            <TabBar />
+          </div>
+        )}
       </header>
       <main className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-6">
         <Routes>
@@ -80,7 +97,9 @@ export default function App() {
           )}
         </Routes>
       </main>
-      <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs text-gray-400 sm:px-6">Processed on this device only — nothing is uploaded.</footer>
+      <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs text-gray-400 sm:px-6">
+        Processed on this device only — nothing is uploaded.
+      </footer>
     </div>
   );
 }

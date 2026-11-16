@@ -27,7 +27,12 @@ function same(x: unknown, y: unknown): boolean {
 
 let failed = 0;
 /** Compare rows by key; only the listed fields (default: every field in expected except ignored). */
-function check(section: string, got: Row[], exp: Row[], opts: { key?: (r: Row) => string; fields?: string[]; ignore?: string[]; allowExtra?: boolean } = {}) {
+function check(
+  section: string,
+  got: Row[],
+  exp: Row[],
+  opts: { key?: (r: Row) => string; fields?: string[]; ignore?: string[]; allowExtra?: boolean } = {},
+) {
   const key = opts.key ?? ((r: Row, i?: number) => String(i));
   const gm = new Map<string, Row>();
   got.forEach((r, i) => gm.set((key as (r: Row, i: number) => string)(r, i), r));
@@ -35,7 +40,10 @@ function check(section: string, got: Row[], exp: Row[], opts: { key?: (r: Row) =
   exp.forEach((e, i) => {
     const k = (key as (r: Row, i: number) => string)(e, i);
     const g = gm.get(k);
-    if (!g) { errs.push(`missing ${k}`); return; }
+    if (!g) {
+      errs.push(`missing ${k}`);
+      return;
+    }
     for (const f of opts.fields ?? Object.keys(e).filter((f) => !(opts.ignore ?? []).includes(f))) {
       if (!same(g[f], e[f])) errs.push(`${k}.${f}: got ${JSON.stringify(g[f])} want ${JSON.stringify(e[f])}`);
     }
@@ -52,8 +60,16 @@ check('summary', [a.summary as unknown as Row], expected('summary'), { ignore: [
 check('monthly', a.monthly as unknown as Row[], expected('monthly'), { key: (r) => String(r.month) });
 check('categories', a.categories as unknown as Row[], expected('categories'), { key: (r) => `${r.direction}|${r.category}` });
 check('hours', a.hours as unknown as Row[], expected('hours'), { key: (r) => String(r.hour) });
-check('people', a.people as unknown as Row[], expected('people'), { key: (r) => String(r.name), fields: ['sent', 'sent_n', 'recv', 'recv_n', 'net'], allowExtra: true });
-check('payees', a.payees as unknown as Row[], expected('paybill_till_v2'), { key: (r) => String(r.key), fields: ['amount', 'count'], allowExtra: true });
+check('people', a.people as unknown as Row[], expected('people'), {
+  key: (r) => String(r.name),
+  fields: ['sent', 'sent_n', 'recv', 'recv_n', 'net'],
+  allowExtra: true,
+});
+check('payees', a.payees as unknown as Row[], expected('paybill_till_v2'), {
+  key: (r) => String(r.key),
+  fields: ['amount', 'count'],
+  allowExtra: true,
+});
 check('biz_dow', a.biz.dow as unknown as Row[], expected('biz_dow'), { key: (r) => String(r.day) });
 check('biz_hour', a.biz.hour as unknown as Row[], expected('biz_hour'), { key: (r) => String(r.hour) });
 check('biz_parts', a.biz.parts as unknown as Row[], expected('biz_parts'), { key: (r) => String(r.part) });
@@ -63,12 +79,17 @@ check('fb_venues', a.fb.venues as unknown as Row[], expected('fb_venues'), { key
 check('fb_yearly', a.fb.yearly as unknown as Row[], expected('fb_yearly'), { key: (r) => String(r.year) });
 check('fb_dow', a.fb.dow as unknown as Row[], expected('fb_dow'), { key: (r) => String(r.day) });
 check('drain_bars', a.drains.bars as unknown as Row[], expected('drain_bars'), { key: byIdx });
-check('drain_people', a.drains.people as unknown as Row[], expected('drain_people'), { key: byIdx, fields: ['rank', 'name', 'net_out', 'flags'], allowExtra: true });
+check('drain_people', a.drains.people as unknown as Row[], expected('drain_people'), {
+  key: byIdx,
+  fields: ['rank', 'name', 'net_out', 'flags'],
+  allowExtra: true,
+});
 check('loans_monthly', a.loans.monthly as unknown as Row[], expected('loans_monthly'), { key: (r) => String(r.month) });
 check('loans_products', a.loans.products as unknown as Row[], expected('loans_products'), { key: (r) => String(r.product) });
 check('flags', a.flags as unknown as Row[], expected('flags'), { key: byIdx, fields: ['id', 'severity', 'value'] });
 
 console.log(`\n${pr.txns.length} txns from ${pr.counters.totalSms} SMS; parse ${t1 - t0} ms, analyze ${t2 - t1} ms`);
 console.log(failed ? `${failed} section(s) FAILED` : 'ALL SECTIONS PASS');
-if (process.argv.includes('--details')) for (const f of a.flags) console.log(`- [${f.severity}] ${f.id} = ${f.value} ${f.unit}\n    ${f.detail}`);
+if (process.argv.includes('--details'))
+  for (const f of a.flags) console.log(`- [${f.severity}] ${f.id} = ${f.value} ${f.unit}\n    ${f.detail}`);
 process.exitCode = failed ? 1 : 0;

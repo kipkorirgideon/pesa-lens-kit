@@ -57,7 +57,9 @@ function HeatMap({ grid }: { grid: BizGridRow[] }) {
       <div className="grid min-w-[560px] gap-[2px]" style={{ gridTemplateColumns: '2.25rem repeat(24, minmax(0, 1fr))' }}>
         <div />
         {Array.from({ length: 24 }, (_, h) => (
-          <div key={h} className="text-center text-[10px] text-gray-500">{h % 3 === 0 ? String(h).padStart(2, '0') : ''}</div>
+          <div key={h} className="text-center text-[10px] text-gray-500">
+            {h % 3 === 0 ? String(h).padStart(2, '0') : ''}
+          </div>
         ))}
         {days.map((d) => (
           <div key={d} className="contents">
@@ -67,8 +69,11 @@ function HeatMap({ grid }: { grid: BizGridRow[] }) {
               const t = c?.total ?? 0;
               const op = t > 0 ? 0.08 + 0.92 * Math.sqrt(t / max) : 0;
               return (
-                <div key={h} className="aspect-square rounded-[2px] bg-gray-50"
-                  title={`${d} ${hourLabel(h)}–${String(h).padStart(2, '0')}:59: ${ksh(t)} · ${num(c?.count ?? 0)} payments`}>
+                <div
+                  key={h}
+                  className="aspect-square rounded-[2px] bg-gray-50"
+                  title={`${d} ${hourLabel(h)}–${String(h).padStart(2, '0')}:59: ${ksh(t)} · ${num(c?.count ?? 0)} payments`}
+                >
                   <div className="h-full w-full rounded-[2px]" style={{ background: COLORS.blue, opacity: op }} />
                 </div>
               );
@@ -78,7 +83,9 @@ function HeatMap({ grid }: { grid: BizGridRow[] }) {
       </div>
       <div className="mt-2 flex items-center gap-2 text-[11px] text-gray-500">
         Less
-        {[0.1, 0.3, 0.55, 0.8, 1].map((o) => <span key={o} className="inline-block h-2.5 w-2.5 rounded-[2px]" style={{ background: COLORS.blue, opacity: o }} />)}
+        {[0.1, 0.3, 0.55, 0.8, 1].map((o) => (
+          <span key={o} className="inline-block h-2.5 w-2.5 rounded-[2px]" style={{ background: COLORS.blue, opacity: o }} />
+        ))}
         More · hover or tap a cell for the exact amount
       </div>
     </div>
@@ -88,13 +95,23 @@ function HeatMap({ grid }: { grid: BizGridRow[] }) {
 export default function Payees() {
   const a = useAnalysis();
   const [filter, setFilter] = useState<Filter>('all');
-  const ranked: Ranked[] = useMemo(() =>
-    a.payees.filter((p) => filter === 'all' || p.type === filter).sort((x, y) => y.amount - x.amount).slice(0, 100).map((p, i) => ({ ...p, rank: i + 1 })),
-  [a.payees, filter]);
+  const ranked: Ranked[] = useMemo(
+    () =>
+      a.payees
+        .filter((p) => filter === 'all' || p.type === filter)
+        .sort((x, y) => y.amount - x.amount)
+        .slice(0, 100)
+        .map((p, i) => ({ ...p, rank: i + 1 })),
+    [a.payees, filter],
+  );
 
   const tot = useMemo(() => {
-    let pb = 0, till = 0;
-    a.payees.forEach((p) => { if (p.type === 'Paybill') pb += p.amount; else till += p.amount; });
+    let pb = 0,
+      till = 0;
+    a.payees.forEach((p) => {
+      if (p.type === 'Paybill') pb += p.amount;
+      else till += p.amount;
+    });
     return { pb, till };
   }, [a.payees]);
   const busiestDay = a.biz.dow.reduce((b, d) => (d.total > b.total ? d : b), a.biz.dow[0] ?? { day: '—', total: 0 });
@@ -105,18 +122,57 @@ export default function Payees() {
       <PageTitle title="Paybills & tills" subtitle={`${num(a.payees.length)} businesses paid`} />
       <Takeaway>
         You paid <b>{ksh(tot.pb)}</b> through paybills and <b>{ksh(tot.till)}</b> at tills.
-        {busiestDay && <> {busiestDay.day} is the biggest paying day ({ksh(busiestDay.total)}); </>}
-        {topPart && <>most money goes out in the {topPart.part.replace(/\s*\d.*$/, '').toLowerCase()} ({pct(topPart.share)}).</>}
+        {busiestDay && (
+          <>
+            {' '}
+            {busiestDay.day} is the biggest paying day ({ksh(busiestDay.total)});{' '}
+          </>
+        )}
+        {topPart && (
+          <>
+            most money goes out in the {topPart.part.replace(/\s*\d.*$/, '').toLowerCase()} ({pct(topPart.share)}).
+          </>
+        )}
       </Takeaway>
 
-      <Section title="Top 100 payees" actions={
-        <Segmented label="Payee type" value={filter} onChange={setFilter}
-          options={[{ value: 'all', label: 'All' }, { value: 'Paybill', label: 'Paybill' }, { value: 'Till / Buy Goods', label: 'Till' }]} />}>
-        <DataTable key={filter} rows={ranked} columns={payeeCols} rowKey={(r) => r.key} filename={`mpesa-payees-top100-${filter === 'all' ? 'all' : filter === 'Paybill' ? 'paybill' : 'till'}`}
-          searchable searchPlaceholder="Search payees or accounts…" initialSort={{ key: 'rank', dir: 'asc' }} />
+      <Section
+        title="Top 100 payees"
+        actions={
+          <Segmented
+            label="Payee type"
+            value={filter}
+            onChange={setFilter}
+            options={[
+              { value: 'all', label: 'All' },
+              { value: 'Paybill', label: 'Paybill' },
+              { value: 'Till / Buy Goods', label: 'Till' },
+            ]}
+          />
+        }
+      >
+        <DataTable
+          key={filter}
+          rows={ranked}
+          columns={payeeCols}
+          rowKey={(r) => r.key}
+          filename={`mpesa-payees-top100-${filter === 'all' ? 'all' : filter === 'Paybill' ? 'paybill' : 'till'}`}
+          searchable
+          searchPlaceholder="Search payees or accounts…"
+          initialSort={{ key: 'rank', dir: 'asc' }}
+        />
       </Section>
 
-      <Section title="When you pay" subtitle={<Legend items={[{ color: COLORS.blue, label: 'Paybill' }, { color: COLORS.orange, label: 'Till' }]} />}>
+      <Section
+        title="When you pay"
+        subtitle={
+          <Legend
+            items={[
+              { color: COLORS.blue, label: 'Paybill' },
+              { color: COLORS.orange, label: 'Till' },
+            ]}
+          />
+        }
+      >
         <div className="grid gap-4 lg:grid-cols-2">
           <ChartCard title="By day of the week" height={240}>
             <ResponsiveContainer width="100%" height="100%">
@@ -136,7 +192,16 @@ export default function Payees() {
                 <CartesianGrid {...gridProps} />
                 <XAxis dataKey="hour" {...axisProps} tickFormatter={(h: number) => String(h).padStart(2, '0')} interval={2} />
                 <YAxis {...axisProps} tickFormatter={short} width={48} />
-                <Tooltip cursor={{ fill: '#f3f4f6' }} content={<MoneyTooltip totalLabel="Total" countKey="count" labelFormatter={(l) => `${hourLabel(Number(l))}–${String(Number(l)).padStart(2, '0')}:59`} />} />
+                <Tooltip
+                  cursor={{ fill: '#f3f4f6' }}
+                  content={
+                    <MoneyTooltip
+                      totalLabel="Total"
+                      countKey="count"
+                      labelFormatter={(l) => `${hourLabel(Number(l))}–${String(Number(l)).padStart(2, '0')}:59`}
+                    />
+                  }
+                />
                 <Bar isAnimationActive={false} dataKey="paybill" name="Paybill" stackId="a" fill={COLORS.blue} />
                 <Bar isAnimationActive={false} dataKey="till" name="Till" stackId="a" fill={COLORS.orange} radius={[2, 2, 0, 0]} />
               </BarChart>
@@ -153,7 +218,13 @@ export default function Payees() {
           </div>
           <div className="min-w-0 space-y-2">
             <h3 className="text-sm font-semibold">Top 3 payees per weekday</h3>
-            <DataTable rows={a.biz.dayTop} columns={dayTopCols} rowKey={(r) => r.key} filename="mpesa-payees-top3-per-weekday" maxHeight={360} />
+            <DataTable
+              rows={a.biz.dayTop}
+              columns={dayTopCols}
+              rowKey={(r) => r.key}
+              filename="mpesa-payees-top3-per-weekday"
+              maxHeight={360}
+            />
           </div>
         </div>
       </Section>

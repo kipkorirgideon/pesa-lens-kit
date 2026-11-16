@@ -44,12 +44,27 @@ export function downloadCsv(filename: string, header: string[], rows: unknown[][
   const blob = new Blob(['﻿' + text], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = filename.endsWith('.csv') ? filename : filename + '.csv';
-  document.body.appendChild(a); a.click(); a.remove();
+  a.href = url;
+  a.download = filename.endsWith('.csv') ? filename : filename + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function DataTable<T>({ rows, columns, rowKey, filename, searchable, searchPlaceholder, initialSort, maxHeight = 520, toolbar, empty, caption }: Props<T>) {
+export function DataTable<T>({
+  rows,
+  columns,
+  rowKey,
+  filename,
+  searchable,
+  searchPlaceholder,
+  initialSort,
+  maxHeight = 520,
+  toolbar,
+  empty,
+  caption,
+}: Props<T>) {
   const [q, setQ] = useState('');
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(initialSort ?? null);
 
@@ -57,17 +72,20 @@ export function DataTable<T>({ rows, columns, rowKey, filename, searchable, sear
     let out = rows;
     const needle = q.trim().toLowerCase();
     if (needle) {
-      out = out.filter((r) => columns.some((c) => {
-        const v = c.value(r);
-        return v != null && String(v).toLowerCase().includes(needle);
-      }));
+      out = out.filter((r) =>
+        columns.some((c) => {
+          const v = c.value(r);
+          return v != null && String(v).toLowerCase().includes(needle);
+        }),
+      );
     }
     if (sort) {
       const col = columns.find((c) => c.key === sort.key);
       if (col) {
         const m = sort.dir === 'asc' ? 1 : -1;
         out = [...out].sort((a, b) => {
-          const va = col.value(a), vb = col.value(b);
+          const va = col.value(a),
+            vb = col.value(b);
           if (va == null && vb == null) return 0;
           if (va == null) return 1;
           if (vb == null) return -1;
@@ -88,7 +106,12 @@ export function DataTable<T>({ rows, columns, rowKey, filename, searchable, sear
     });
   };
 
-  const csv = () => downloadCsv(filename, columns.map((c) => c.header), shown.map((r) => columns.map((c) => c.value(r))));
+  const csv = () =>
+    downloadCsv(
+      filename,
+      columns.map((c) => c.header),
+      shown.map((r) => columns.map((c) => c.value(r))),
+    );
 
   return (
     <div className="min-w-0">
@@ -96,14 +119,22 @@ export function DataTable<T>({ rows, columns, rowKey, filename, searchable, sear
         {toolbar}
         {searchable && (
           <input
-            type="search" value={q} onChange={(e) => setQ(e.target.value)}
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
             placeholder={searchPlaceholder ?? 'Search…'}
             aria-label="Search table"
             className="h-8 min-w-0 flex-1 basis-40 rounded-md border border-gray-300 px-2.5 text-sm outline-none focus:border-gray-500 sm:max-w-xs"
           />
         )}
-        <span className="ml-auto text-xs text-gray-500">{shown.length === rows.length ? `${shown.length} rows` : `${shown.length} of ${rows.length}`}</span>
-        <button type="button" onClick={csv} className="h-8 rounded-md border border-gray-300 px-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
+        <span className="ml-auto text-xs text-gray-500">
+          {shown.length === rows.length ? `${shown.length} rows` : `${shown.length} of ${rows.length}`}
+        </span>
+        <button
+          type="button"
+          onClick={csv}
+          className="h-8 rounded-md border border-gray-300 px-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+        >
           Download CSV
         </button>
       </div>
@@ -116,12 +147,20 @@ export function DataTable<T>({ rows, columns, rowKey, filename, searchable, sear
                 const active = sort?.key === c.key;
                 return (
                   <th
-                    key={c.key} scope="col" title={c.hint}
+                    key={c.key}
+                    scope="col"
+                    title={c.hint}
                     aria-sort={active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : undefined}
                     className={`sticky top-0 z-10 whitespace-nowrap border-b border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600 ${c.align === 'right' ? 'text-right' : 'text-left'}`}
                   >
-                    {c.sortable === false ? c.header : (
-                      <button type="button" onClick={() => onSort(c)} className={`inline-flex items-center gap-1 hover:text-gray-900 ${active ? 'text-gray-900' : ''}`}>
+                    {c.sortable === false ? (
+                      c.header
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onSort(c)}
+                        className={`inline-flex items-center gap-1 hover:text-gray-900 ${active ? 'text-gray-900' : ''}`}
+                      >
                         {c.header}
                         <span className="w-2 text-[10px] text-gray-400">{active ? (sort!.dir === 'asc' ? '▲' : '▼') : ''}</span>
                       </button>
@@ -133,13 +172,19 @@ export function DataTable<T>({ rows, columns, rowKey, filename, searchable, sear
           </thead>
           <tbody>
             {shown.length === 0 && (
-              <tr><td colSpan={columns.length} className="px-3 py-6 text-center text-sm text-gray-500">{empty ?? 'Nothing to show.'}</td></tr>
+              <tr>
+                <td colSpan={columns.length} className="px-3 py-6 text-center text-sm text-gray-500">
+                  {empty ?? 'Nothing to show.'}
+                </td>
+              </tr>
             )}
             {shown.map((r, i) => (
               <tr key={rowKey(r, i)} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/70">
                 {columns.map((c) => (
-                  <td key={c.key}
-                    className={`px-3 py-1.5 align-top ${c.wrap ? 'min-w-[14rem]' : 'whitespace-nowrap'} ${c.align === 'right' ? 'text-right' : 'text-left'} ${c.cellClass?.(r) ?? ''}`}>
+                  <td
+                    key={c.key}
+                    className={`px-3 py-1.5 align-top ${c.wrap ? 'min-w-[14rem]' : 'whitespace-nowrap'} ${c.align === 'right' ? 'text-right' : 'text-left'} ${c.cellClass?.(r) ?? ''}`}
+                  >
                     {c.render ? c.render(r) : (c.value(r) ?? '—')}
                   </td>
                 ))}

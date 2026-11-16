@@ -32,9 +32,28 @@ export default function Overview() {
   const takeaway = (
     <>
       Over {num(months)} months you received <b>{ksh(s.money_in)}</b> and spent <b>{ksh(s.money_out)}</b>
-      {net < 0 ? <> — <span className="text-red-600">{ksh(-net)} more out than in</span></> : <> — {ksh(net)} more in than out</>}.
-      {top && <> The biggest outflow was {top.category.toLowerCase()} ({ksh(top.amount)}, {outTotal ? Math.round((top.amount / outTotal) * 100) : 0}%).</>}
-      {s.fuliza > 0 && <> Fuliza covered <span className="text-red-600">{ksh(s.fuliza)}</span> of shortfalls in {fulizaMonths} of {months} months.</>}
+      {net < 0 ? (
+        <>
+          {' '}
+          — <span className="text-red-600">{ksh(-net)} more out than in</span>
+        </>
+      ) : (
+        <> — {ksh(net)} more in than out</>
+      )}
+      .
+      {top && (
+        <>
+          {' '}
+          The biggest outflow was {top.category.toLowerCase()} ({ksh(top.amount)},{' '}
+          {outTotal ? Math.round((top.amount / outTotal) * 100) : 0}%).
+        </>
+      )}
+      {s.fuliza > 0 && (
+        <>
+          {' '}
+          Fuliza covered <span className="text-red-600">{ksh(s.fuliza)}</span> of shortfalls in {fulizaMonths} of {months} months.
+        </>
+      )}
     </>
   );
 
@@ -45,7 +64,12 @@ export default function Overview() {
         <Kpi label="Money in" value={ksh(s.money_in)} />
         <Kpi label="Money out" value={ksh(s.money_out)} />
         <Kpi label="Net" value={ksh(net)} tone={net < 0 ? 'red' : 'default'} />
-        <Kpi label="Fuliza borrowed" value={ksh(s.fuliza)} tone={s.fuliza > 0 ? 'red' : 'default'} sub={`${fulizaMonths} of ${months} months`} />
+        <Kpi
+          label="Fuliza borrowed"
+          value={ksh(s.fuliza)}
+          tone={s.fuliza > 0 ? 'red' : 'default'}
+          sub={`${fulizaMonths} of ${months} months`}
+        />
         <Kpi label="Sent to people" value={ksh(s.people_sent)} />
         <Kpi label="Paybills & tills" value={ksh(s.paybill_till)} />
         <Kpi label="Transaction costs" value={ksh(s.tx_cost)} />
@@ -53,14 +77,31 @@ export default function Overview() {
       </div>
       <Takeaway>{takeaway}</Takeaway>
 
-      <ChartCard title="Money in vs out, by month" subtitle={<Legend items={[{ color: COLORS.blue, label: 'Money in' }, { color: COLORS.orange, label: 'Money out' }, { color: COLORS.red, label: 'Fuliza drawn (below the line)' }]} />} height={300}>
+      <ChartCard
+        title="Money in vs out, by month"
+        subtitle={
+          <Legend
+            items={[
+              { color: COLORS.blue, label: 'Money in' },
+              { color: COLORS.orange, label: 'Money out' },
+              { color: COLORS.red, label: 'Fuliza drawn (below the line)' },
+            ]}
+          />
+        }
+        height={300}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={monthly} margin={{ top: 4, right: 4, left: -8, bottom: 0 }} barGap={0} stackOffset="sign">
             <CartesianGrid {...gridProps} />
             <XAxis dataKey="month" {...axisProps} tickFormatter={monthShort} minTickGap={16} />
             <YAxis {...axisProps} tickFormatter={short} width={48} />
             <ReferenceLine y={0} stroke="#9ca3af" />
-            <Tooltip cursor={{ fill: '#f3f4f6' }} content={<MoneyTooltip absolute labelFormatter={(l) => monthLabel(String(l))} countKey="fuliza_draws" countLabel="Fuliza draws" />} />
+            <Tooltip
+              cursor={{ fill: '#f3f4f6' }}
+              content={
+                <MoneyTooltip absolute labelFormatter={(l) => monthLabel(String(l))} countKey="fuliza_draws" countLabel="Fuliza draws" />
+              }
+            />
             <Bar isAnimationActive={false} dataKey="money_in" name="Money in" fill={COLORS.blue} stackId="in" />
             <Bar isAnimationActive={false} dataKey="money_out" name="Money out" fill={COLORS.orange} stackId="out" />
             <Bar isAnimationActive={false} dataKey="fuliza_neg" name="Fuliza drawn" fill={COLORS.red} stackId="out" />
@@ -80,15 +121,30 @@ export default function Overview() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-        <ChartCard title="Payments by hour of day"
-          subtitle={<>Busiest: {hourLabel(peakHour.hour)} ({ksh(peakHour.amount)}). Between 22:00 and 05:00: <span className={hoursTotal && lateAmount / hoursTotal > 0.1 ? 'text-red-600' : ''}>{ksh(lateAmount)}</span></>}
-          height={260}>
+        <ChartCard
+          title="Payments by hour of day"
+          subtitle={
+            <>
+              Busiest: {hourLabel(peakHour.hour)} ({ksh(peakHour.amount)}). Between 22:00 and 05:00:{' '}
+              <span className={hoursTotal && lateAmount / hoursTotal > 0.1 ? 'text-red-600' : ''}>{ksh(lateAmount)}</span>
+            </>
+          }
+          height={260}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={a.hours} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
               <CartesianGrid {...gridProps} />
               <XAxis dataKey="hour" {...axisProps} tickFormatter={(h: number) => String(h).padStart(2, '0')} interval={2} />
               <YAxis {...axisProps} tickFormatter={short} width={48} />
-              <Tooltip cursor={{ fill: '#f3f4f6' }} content={<MoneyTooltip labelFormatter={(l) => `${hourLabel(Number(l))}–${String(Number(l)).padStart(2, '0')}:59`} countKey="count" />} />
+              <Tooltip
+                cursor={{ fill: '#f3f4f6' }}
+                content={
+                  <MoneyTooltip
+                    labelFormatter={(l) => `${hourLabel(Number(l))}–${String(Number(l)).padStart(2, '0')}:59`}
+                    countKey="count"
+                  />
+                }
+              />
               <Bar isAnimationActive={false} dataKey="amount" name="Paid out" fill={COLORS.blue} radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -96,7 +152,13 @@ export default function Overview() {
       </div>
 
       <Section title="Categories" subtitle="Every money-in and money-out category.">
-        <DataTable rows={a.categories} columns={catCols} rowKey={(r) => r.direction + r.category} filename="mpesa-categories" initialSort={{ key: 'amount', dir: 'desc' }} />
+        <DataTable
+          rows={a.categories}
+          columns={catCols}
+          rowKey={(r) => r.direction + r.category}
+          filename="mpesa-categories"
+          initialSort={{ key: 'amount', dir: 'desc' }}
+        />
       </Section>
     </div>
   );

@@ -12,7 +12,9 @@ function loadSettings(): Settings {
     if (!raw) return DEFAULT_SETTINGS;
     const s = JSON.parse(raw) as Partial<Settings>;
     return {
-      excludedPeople: Array.isArray(s.excludedPeople) ? s.excludedPeople.filter((x) => typeof x === 'string') : DEFAULT_SETTINGS.excludedPeople,
+      excludedPeople: Array.isArray(s.excludedPeople)
+        ? s.excludedPeople.filter((x) => typeof x === 'string')
+        : DEFAULT_SETTINGS.excludedPeople,
       extraBars: Array.isArray(s.extraBars) ? s.extraBars.filter((x) => typeof x === 'string') : DEFAULT_SETTINGS.extraBars,
     };
   } catch {
@@ -20,7 +22,11 @@ function loadSettings(): Settings {
   }
 }
 function saveSettings(s: Settings) {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch { /* storage unavailable — keep in memory */ }
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  } catch {
+    /* storage unavailable — keep in memory */
+  }
 }
 
 export interface AppState {
@@ -57,7 +63,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
-  const setSettings = useCallback((s: Settings) => { setSettingsState(s); saveSettings(s); }, []);
+  const setSettings = useCallback((s: Settings) => {
+    setSettingsState(s);
+    saveSettings(s);
+  }, []);
 
   const { analysis, analysisError } = useMemo(() => {
     if (!parse) return { analysis: null, analysisError: null };
@@ -70,11 +79,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [parse, settings]);
 
   const loadFile = useCallback(async (f: File) => {
-    setLoading(true); setLoadError(null);
+    setLoading(true);
+    setLoadError(null);
     try {
       const p = await loadBackupFile(f);
-      if (!p.txns.length) throw new Error('No M-PESA transactions were found in this backup. Make sure the export includes messages from MPESA.');
-      setParse(p); setFileName(f.name);
+      if (!p.txns.length)
+        throw new Error('No M-PESA transactions were found in this backup. Make sure the export includes messages from MPESA.');
+      setParse(p);
+      setFileName(f.name);
       return true;
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : String(e));
@@ -84,11 +96,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const reset = useCallback(() => { setParse(null); setFileName(null); setLoadError(null); }, []);
+  const reset = useCallback(() => {
+    setParse(null);
+    setFileName(null);
+    setLoadError(null);
+  }, []);
 
-  useEffect(() => { if (analysisError) setLoadError('The file was read, but analysing it failed: ' + analysisError); }, [analysisError]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- existing behaviour; restructure in a later task
+    if (analysisError) setLoadError('The file was read, but analysing it failed: ' + analysisError);
+  }, [analysisError]);
 
-  const value = useMemo<AppState>(() => ({ parse, analysis, analysisError, settings, setSettings, loading, loadError, fileName, loadFile, reset }),
-    [parse, analysis, analysisError, settings, setSettings, loading, loadError, fileName, loadFile, reset]);
+  const value = useMemo<AppState>(
+    () => ({ parse, analysis, analysisError, settings, setSettings, loading, loadError, fileName, loadFile, reset }),
+    [parse, analysis, analysisError, settings, setSettings, loading, loadError, fileName, loadFile, reset],
+  );
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
 }
