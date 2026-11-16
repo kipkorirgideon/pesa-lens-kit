@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { collapse, parseBackup } from './parse';
-import { backup, MSG, MSG_EXTRA, sms, T0 } from './__fixtures__/messages';
+import { collapse, isMpesaSender, parseBackup } from './parse';
+import { backup, MSG, MSG_EXTRA, otherSms, sms, T0 } from './__fixtures__/messages';
 
 const one = (body: string) => {
   const r = parseBackup(backup(body));
@@ -233,5 +233,37 @@ describe('parse coverage gaps (TASK-3)', () => {
 
   it('parses a negative balance', () => {
     expect(one(MSG_EXTRA.negative_balance).balance).toBe(-20);
+  });
+});
+
+describe('sender filter (SPEC §Input file)', () => {
+  const lure = `${MSG.till} ${MSG.wrong_pin} insufficient funds, PIN is locked`;
+
+  it('ignores a non-M-PESA message entirely: no transaction, no counters, still in totalSms', () => {
+    const r = parseBackup({ listSms: [otherSms(lure), otherSms(MSG.kcb_loan_a), otherSms(MSG.wrong_pin, 'MPESA2')] });
+    expect(r.txns).toHaveLength(0);
+    expect(r.kcbLoanRequestTs).toEqual([]);
+    expect(r.counters).toEqual({ insufficientFunds: 0, wrongPin: 0, pinLocked: 0, kcbLoanRequests: 0, totalSms: 3 });
+  });
+
+  it('a transaction-shaped body from another sender does not consume the dedupe key', () => {
+    const r = parseBackup({ listSms: [otherSms(MSG.till), sms(MSG.till)] });
+    expect(r.txns).toHaveLength(1);
+  });
+
+  it.each(['MPESA', 'M-PESA', 'mpesa', 'm-pesa', 'Mpesa', '  MPESA ', '\tM-PESA\n'])('accepts sender %j', (adress) => {
+    const r = parseBackup({ listSms: [otherSms(MSG.till, adress), otherSms(MSG.wrong_pin, adress)] });
+    expect(r.txns).toHaveLength(1);
+    expect(r.counters.wrongPin).toBe(1);
+  });
+
+  it.each(['', 'MPESA-ALERTS', 'M PESA', 'MPESAX', 'SAFARICOM'])('rejects sender %j', (adress) => {
+    expect(isMpesaSender(adress)).toBe(false);
+  });
+
+  it('tolerates a missing or non-string adress', () => {
+    expect(isMpesaSender(undefined)).toBe(false);
+    expect(isMpesaSender(null)).toBe(false);
+    expect(isMpesaSender(123)).toBe(false);
   });
 });

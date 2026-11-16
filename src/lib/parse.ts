@@ -72,6 +72,9 @@ const BAL = /New M-?PESA (?:account )?balance is Ksh\s?(-?[\d,]+\.\d+)/i;
 /** Sender ending in a full or masked phone => a person ("JOHN DOE 0727***224"). */
 const PHONE_TAIL = /^(.*?)\s+((?:0|\+?254)\d[\d*]{6,10})$/;
 
+/** SPEC §Input file: only messages whose `adress` is MPESA or M-PESA (any case, surrounding whitespace ignored). */
+export const isMpesaSender = (adress: unknown): boolean => /^m-?pesa$/i.test(String(adress ?? '').trim());
+
 export const collapse = (s: string) => s.replace(/\s+/g, ' ').trim();
 
 export function parseBackup(raw: { listSms: RawSms[] }): ParseResult {
@@ -85,6 +88,8 @@ export function parseBackup(raw: { listSms: RawSms[] }): ParseResult {
   const kcbLoanRequestTs: number[] = [];
 
   for (const m of list) {
+    // Non-M-PESA senders are skipped entirely: no transaction rules and no counters.
+    if (!isMpesaSender(m.adress)) continue;
     const rawBody = String(m.body ?? '');
     // Counters on the raw body (non-transaction messages)
     if (/insufficient|not have sufficient/i.test(rawBody)) insufficientFunds++;

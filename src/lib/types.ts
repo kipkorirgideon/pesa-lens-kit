@@ -48,7 +48,12 @@ export interface Txn {
 
 export interface ParseResult {
   txns: Txn[];
-  /** Counts of non-transaction messages useful for red flags */
+  /**
+   * Counts of non-transaction messages useful for red flags. `insufficientFunds`, `wrongPin`, `pinLocked` and
+   * `kcbLoanRequests` count M-PESA-sender messages only (`adress` MPESA / M-PESA, see `isMpesaSender`).
+   * `totalSms` is the number of messages in the file (`listSms.length`), whatever their sender; it is a file-level
+   * figure, not the number of messages that were considered.
+   */
   counters: { insufficientFunds: number; wrongPin: number; pinLocked: number; kcbLoanRequests: number; totalSms: number };
   /** Optional (added by parser): SMS `time` (epoch ms) of each distinct KCB M-PESA loan request, for loans.monthly.kcb_requests. */
   kcbLoanRequestTs?: number[];
