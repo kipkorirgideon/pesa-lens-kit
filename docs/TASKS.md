@@ -619,7 +619,15 @@ downloading charting code they do not render.
   **Acceptance criteria.**
   - `ci.yml` gains a `npm run format:check` step (the script already exists in `package.json`) after
     `npm run lint`, so all five gates run on every PR and every push to `main`.
-  - The job name is updated from `lint, typecheck, test, build` to include the format check.
+  - ~~The job name is updated from `lint, typecheck, test, build` to include the format check.~~
+    **Dropped by Apex ruling (PR #15, 2026-11-16) — do not reinstate.** `main`'s branch protection
+    requires a status check whose context is the exact string `lint, typecheck, test, build`.
+    The job name in `.github/workflows/ci.yml` is therefore load-bearing: renaming it means the
+    required check can never report again and **every future PR blocks forever** on a check that
+    does not exist. The format check lives as a step inside that job instead, which is also what
+    the required check needs in order to cover it. If the name must ever change, the
+    branch-protection contexts have to be updated to the new name **first**, by the repository
+    owner in the GitHub UI, and the workflow renamed only after that.
   - A deliberately misformatted file makes the new step fail with a non-zero exit, confirmed on a
     scratch branch before the PR is opened (do not merge the misformatted commit).
   - `README.md` no longer says CI skips the format check; it states which gates CI runs and that
