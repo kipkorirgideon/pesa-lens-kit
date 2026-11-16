@@ -163,6 +163,15 @@ describe('analyze: night-of-week rule', () => {
     expect(a.fb.nights[0]).toMatchObject({ night: '2026-04-26', day: 'Sun' });
   });
 
+  it('pins the cut-off exactly: 04:59 is the previous evening, 05:00 is the same day', () => {
+    // 04:59 kills any offset below 5 h (e.g. 4 h gives 00:59 on the same day).
+    // 05:00 kills any offset above 5 h (e.g. 6 h gives 23:00 on the previous day).
+    const before = analyze(parseResult([bar(nairobi(2026, 4, 26, 4, 59), 100)]), NONE);
+    expect(before.fb.nights[0]).toMatchObject({ night: '2026-04-25', day: 'Sat' });
+    const at = analyze(parseResult([bar(nairobi(2026, 4, 26, 5, 0), 100)]), NONE);
+    expect(at.fb.nights[0]).toMatchObject({ night: '2026-04-26', day: 'Sun' });
+  });
+
   it('uses the 5-hour-earlier date only for nights, not for the "night" flag hours', () => {
     const a = analyze(parseResult([bar(nairobi(2026, 4, 26, 2, 0), 900)]), NONE);
     expect(a.flags.find((f) => f.id === 'night')).toMatchObject({ value: 1 });

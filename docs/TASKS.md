@@ -365,7 +365,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Out of scope.** Any other keyword change, reordering the bar/meat/food precedence, the
   `PROFILE.extraBarPattern` removal (TASK-5).
 
-- [ ] ## TASK-15 — Pin the 05:00 night-of-week cut-off with a boundary test
+- [x] ## TASK-15 — Pin the 05:00 night-of-week cut-off with a boundary test
       **Why:** found while reviewing PR #3. SPEC §Definitions says "payments before 05:00 count toward
       the previous evening", implemented as `night: parts(t - 5 * 3600e3)` in `src/lib/analyze.ts`.
       The TASK-3 tests assert 02:00 → previous evening and 05:00 → same day, which only brackets the
