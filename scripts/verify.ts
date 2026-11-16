@@ -30,6 +30,28 @@ function same(x: unknown, y: unknown): boolean {
   return String(x) === String(y);
 }
 
+/**
+ * Approved, dated deltas between the golden baseline and the current code, read from the git-ignored
+ * reference/approved-deltas.json (it holds figures derived from a real backup, so it never lives in the repo; like
+ * reference/expected it is needed to run verify at all). The baseline is never regenerated; a deliberate behaviour
+ * change is recorded there instead, applied only to the exact cells listed (section + row key + field, baseline
+ * value -> new value, approving task, date). A cell that no longer differs is an error, so stale entries get removed.
+ */
+interface Approved {
+  task: string;
+  date: string;
+  section: string;
+  key: string;
+  field: string;
+  from: unknown;
+  to: unknown;
+}
+const approvedPath = join(ROOT, 'reference/approved-deltas.json');
+const APPROVED: Approved[] = existsSync(approvedPath) ? JSON.parse(readFileSync(approvedPath, 'utf8')) : [];
+const used = new Set<Approved>();
+const approvedFor = (section: string, key: string, field: string, got: unknown, want: unknown) =>
+  APPROVED.find((p) => p.section === section && p.key === key && p.field === field && same(p.from, want) && same(p.to, got));
+
 let failed = 0;
 /** Compare rows by key; only the listed fields (default: every field in expected except ignored). */
 function check(
@@ -50,13 +72,21 @@ function check(
       return;
     }
     for (const f of opts.fields ?? Object.keys(e).filter((f) => !(opts.ignore ?? []).includes(f))) {
-      if (!same(g[f], e[f])) errs.push(`${k}.${f}: got ${JSON.stringify(g[f])} want ${JSON.stringify(e[f])}`);
+      if (same(g[f], e[f])) continue;
+      const ap = approvedFor(section, k, f, g[f], e[f]);
+      if (ap) used.add(ap);
+      else errs.push(`${k}.${f}: got ${JSON.stringify(g[f])} want ${JSON.stringify(e[f])}`);
     }
   });
   if (!opts.allowExtra && got.length !== exp.length) errs.push(`row count: got ${got.length} want ${exp.length}`);
   const ok = errs.length === 0;
   if (!ok) failed++;
-  console.log(`${ok ? 'PASS' : 'FAIL'}  ${section.padEnd(16)} ${exp.length} rows${ok ? '' : `, ${errs.length} mismatches`}`);
+  const nApproved = APPROVED.filter((p) => p.section === section && used.has(p)).length;
+  const note =
+    ok && nApproved
+      ? ` (approved delta: ${[...new Set(APPROVED.filter((p) => p.section === section).map((p) => p.task))].join(', ')}, ${nApproved} cells)`
+      : '';
+  console.log(`${ok ? 'PASS' : 'FAIL'}  ${section.padEnd(16)} ${exp.length} rows${ok ? note : `, ${errs.length} mismatches`}`);
   for (const e of errs.slice(0, 5)) console.log('        ' + e);
 }
 
@@ -93,6 +123,10 @@ check('loans_monthly', a.loans.monthly as unknown as Row[], expected('loans_mont
 check('loans_products', a.loans.products as unknown as Row[], expected('loans_products'), { key: (r) => String(r.product) });
 check('flags', a.flags as unknown as Row[], expected('flags'), { key: byIdx, fields: ['id', 'severity', 'value'] });
 
+for (const p of APPROVED.filter((x) => !used.has(x))) {
+  failed++;
+  console.log(`FAIL  stale approved delta (${p.task}, ${p.date}): ${p.section}[${p.key}].${p.field} no longer differs; remove it`);
+}
 console.log(`\n${pr.txns.length} txns from ${pr.counters.totalSms} SMS; parse ${t1 - t0} ms, analyze ${t2 - t1} ms`);
 console.log(failed ? `${failed} section(s) FAILED` : 'ALL SECTIONS PASS');
 if (process.argv.includes('--details'))

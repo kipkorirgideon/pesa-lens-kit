@@ -19,9 +19,18 @@ describe('classifyPayee', () => {
     'SAMPLE LOUNGE',
   ])('bar keyword: %s', (n) => expect(classifyPayee(n)).toBe(BARS));
 
-  // NOTE: "MILK BAR is food, not a bar" (TASK-3 criterion) is deliberately NOT asserted: the BAR regex
-  // `\bBAR\b(?!.*MILK)` only looks for MILK *after* "BAR", so "SAMPLE MILK BAR" currently classifies as a bar.
-  // Reported to Apex as a finding.
+  it('MILK BAR is food, not a bar, in either word order, while real bars stay bars', () => {
+    expect(classifyPayee('SAMPLE MILK BAR')).toBe(FOOD);
+    expect(classifyPayee('Demo Milk Bar')).toBe(FOOD);
+    expect(classifyPayee('MILK BAR DEMO')).toBe(FOOD);
+    expect(classifyPayee('SAMPLE MILK  BAR')).toBe(FOOD); // double space
+    expect(classifyPayee('SAMPLE MILK-BAR')).toBe(FOOD);
+    expect(classifyPayee('SAMPLE BAR')).toBe(BARS);
+    expect(classifyPayee('DEMO MILKY WAY BAR')).toBe(BARS);
+    expect(classifyPayee('SAMPLE MILK BAR WINES')).toBe(BARS); // another bar keyword still wins
+    expect(classifyPayee('SAMPLE MILK  BAR WINES')).toBe(BARS);
+    expect(classifyPayee('SAMPLE BAR MILK')).toBeNull(); // a later MILK still cancels BAR (unchanged)
+  });
 
   it('LOUNGE is a bar but a KINYOZI lounge (barber) is nothing', () => {
     expect(classifyPayee('SAMPLE LOUNGE')).toBe(BARS);

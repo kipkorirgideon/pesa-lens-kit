@@ -30,3 +30,21 @@ The golden data was produced with personal classification values (excluded peopl
 ```
 
 If the file is absent, empty defaults are used and sections that depended on personal values will differ from the golden data. Matching is plain text, case-insensitive, by prefix (an exact name is a prefix of itself); there is no RegExp support anywhere in settings. `extraBars` remains an exact (upper-cased) name match.
+
+## Removing the hard-coded `extraBarPattern` (TASK-5, recorded under TASK-28)
+
+Before TASK-5, `src/profile.ts` carried a hard-coded regex (`PROFILE.extraBarPattern`) that classed payees as bars by **substring**. TASK-5 deleted it, because it compiled personal names into the bundle. `settings.extraBars` was **not** changed by TASK-5: it was already, on `main`, an exact upper-cased `Set` lookup, and it still is. What changed is that the regex's substring effect is gone and must now be reproduced by enumerating exact payee spellings in `extraBars`.
+
+When `reference/settings.json` held *partial* names (which an exact lookup cannot match), several `verify` sections moved: the food-and-bars sections, `drain_bars` and one `flags` value, all showing fewer bar payments and venues than the baseline. With every payee spelling listed exactly, `verify` passed. The measured figures are in `reference/MEASUREMENTS.md`, which is local-only (git-ignored, absent from a fresh clone, like `.claude/handoff/`).
+
+Practical consequence: one venue with several till spellings must currently be added once per spelling. TASK-17 (prefix matching for `extraBars`) would remove that. It is not a regression in `extraBars` semantics.
+
+## MILK BAR classification (TASK-14)
+
+The old bar pattern `\bBAR\b(?!.*MILK)` only looked *forward* for MILK, so a name with MILK before BAR was classed as a bar. Now `isBar()` in `src/lib/classify.ts` tests the other bar keywords on the raw name, and tests `\bBAR\b(?!.*MILK)` against the name with every `MILK BAR` (any whitespace or hyphen between the words) reduced to `MILK`. So a BAR that belongs to a MILK BAR is not a keyword, a later MILK still cancels BAR as before, and the name falls through to the food rule. Other bar keywords in the same name still win. There is deliberately no regex lookbehind: it is a SyntaxError for the whole script on Safari older than 16.4, which is inside Vite's default build target (see TASK-29).
+
+This is a deliberate fix, so the output differs from the golden data in exactly one way: one venue moves from Bars & lounges to Restaurants, hotels & food. Five `verify` sections move (`fb_summary`, `fb_cats`, `fb_venues`, `fb_yearly`, `fb_dow`); bar and food totals move by equal and opposite amounts, the payment counts by -n/+n, the one `fb_venues` row changes category only, and the year and weekday splits conserve. The figures are in `reference/MEASUREMENTS.md` (local-only).
+
+### Baseline provenance
+
+`reference/expected/` was **not** regenerated; it still encodes the original analysis (and its mis-anchored lookahead). Instead, `scripts/verify.ts` applies a dated allow-list of exactly the moved cells, read from the git-ignored `reference/approved-deltas.json` (section, row key, field, baseline value, new value, approving task, date 2026-11-17). An allowed cell prints `PASS (approved delta: TASK-14, n cells)`; any other mismatch still fails; an entry that no longer differs fails as stale. `npm run verify` therefore prints ALL SECTIONS PASS and any further parser change is a clean pass/fail. Future deliberate deltas are appended to the same file with their task and date.

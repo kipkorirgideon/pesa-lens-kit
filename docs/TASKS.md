@@ -333,7 +333,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
 
   **Out of scope.** Rewriting the rule table, the sender filter (TASK-8), dedupe (TASK-12).
 
-- [ ] ## TASK-14 — `MILK BAR` must classify as food, not a bar
+- [x] ## TASK-14 — `MILK BAR` must classify as food, not a bar
       **Why:** found while reviewing PR #3 (TASK-3). `docs/SPEC.md` §Definitions says bars match
       `\bBAR\b` **(not "MILK BAR")** and lists `MILK BAR` under restaurants & food, but the
       implementation in `src/lib/classify.ts` is
@@ -345,11 +345,18 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Files.** `src/lib/classify.ts`, `src/lib/classify.test.ts`, possibly `docs/PARSER_NOTES.md`.
 
   **Acceptance criteria.**
+  - **Done.** The BAR keyword is tested on the name with `MILK BAR` reduced to `MILK` (lookbehind-free,
+    ES5-safe), alongside the existing lookahead, so MILK on either side of BAR rejects that keyword only;
+    other bar words (`WINES`, ...) still match. `npm run verify` moves by design and the approved delta is
+    allow-listed: see `docs/PARSER_NOTES.md` "MILK BAR classification".
   - `classifyPayee('SAMPLE MILK BAR')` returns `'Restaurants, hotels & food'`; `classifyPayee('SAMPLE BAR')`
     still returns `'Bars & lounges'`; the `NOT_FB`, `LOUNGE`/`KINYOZI`, butchery-before-food and
     `extraBars` behaviours are unchanged (existing classify tests stay green untouched).
   - The deliberate omission comment in `src/lib/classify.test.ts` is removed and replaced by the
     asserted case, so the TASK-3 criterion is finally met.
+  - **Python reference: not available.** `reference/python/bars.py` does not exist in this checkout
+    (`reference/` holds only the generated baseline and `settings.json`), so the criterion below could not be
+    performed. Original text:
   - **Check the Python reference first.** `reference/python/bars.py` is the source this file was
     ported from and probably carries the same mis-anchored lookahead, which means the golden data in
     `reference/expected/` may encode the buggy classification. Diff the Python regex before touching
@@ -515,6 +522,9 @@ golden data will expose, so settle them *before* interpreting a verify failure a
       **Baseline:** `npm run verify` passes on TASK-5's code only when `reference/settings.json` lists
       every payee variant by exact name (the PR #5 rulings); partial names there do not match. Do not
       start before that exact-name baseline is confirmed.
+      **Measured cost of the current exact matching (TASK-28):** see `docs/PARSER_NOTES.md`
+      "Removing the hard-coded extraBarPattern". Until this task lands, one venue with several till
+      spellings must be added to `extraBars` once per spelling.
 
   **Files.** `src/lib/classify.ts`, `src/lib/analyze.ts` (the `extraBars` Set is built there and
   strips a `Paybill|`/`Till / Buy Goods|` key prefix — that normalisation must survive),
@@ -787,3 +797,31 @@ downloading charting code they do not render.
   owner can change them. Agents must not attempt it. Do not rename the existing CI job.
 
   **Acceptance criteria.** `e2e (playwright)` is listed among required status checks for `main`.
+
+- [x] ## TASK-28 — Record the measured effect of removing `PROFILE.extraBarPattern` _(Forge; docs only)_
+      **Why.** Mandated by Apex in the PR #5 review so the mechanism is on record and not re-framed as
+      "`extraBars` became stricter" (it did not). Recorded in `docs/PARSER_NOTES.md` and TASK-17.
+
+- [ ] ## TASK-29 — Declare an explicit browser target _(Forge)_
+      **Why.** Found in the PR #21 review: a regex lookbehind reached `main`-candidate code with nothing
+      in the repo saying which engines must run it. No `browserslist`, no `build.target`, no statement in
+      ARCHITECTURE.md, so the target is Vite's default `'modules'` (safari14), which this app's own code
+      cannot parse. Browser support must be a decision, not an accident.
+
+  **Acceptance criteria.**
+  - A `browserslist` in `package.json` and a matching `build.target` in `vite.config.ts`, with the chosen
+    floor written down (propose: last 2 years of Chrome/Edge/Firefox and **iOS Safari >= 15.6**).
+  - `docs/ARCHITECTURE.md` gains an ADR recording the target and why, plus the rule that syntax newer
+    than the floor (lookbehind, `Array.prototype.at`, `??=` in workers, ...) is banned in `src/`.
+  - An automated guard, not just prose: ESLint `plugin:compat` (or equivalent) wired into
+    `npm run lint -- --max-warnings=0` so a future lookbehind fails the gate instead of shipping green.
+  - A test or build-time check that `dist/assets/*.js` contains no `(?<` lookbehind.
+
+- [x] ## TASK-30 — Teach `verify` the approved MILK BAR delta _(Forge)_
+      **Why.** TASK-14 intentionally moves 5 of 19 sections and the golden baseline is deliberately not
+      regenerated, so without this `npm run verify` could never print ALL SECTIONS PASS again.
+
+  **Done in PR #21.** `scripts/verify.ts` carries a dated allow-list of the approved cells,
+  applied only to those exact cells; an allowed cell prints `PASS (approved delta: TASK-14, n cells)`, any
+  other mismatch still fails, and an allow-listed cell that no longer differs fails as stale. `npm run
+  verify` prints ALL SECTIONS PASS. Provenance in `docs/PARSER_NOTES.md` "Baseline provenance".
