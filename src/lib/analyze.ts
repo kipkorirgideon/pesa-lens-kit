@@ -337,8 +337,8 @@ export function analyze(pr: ParseResult, settings: Settings): Analysis {
   const fbRows: FbTx[] = [];
   for (const r of biz) {
     const n = payeeName(r.name ?? ''),
-      c = classifyPayee(n, extraBars);
-    if (c) fbRows.push({ ...r, venue: venueName(n), cls: c });
+      c = classifyPayee(n, { extraBars, extraFood: settings.extraFood });
+    if (c) fbRows.push({ ...r, venue: venueName(n, settings.venueMerges), cls: c });
   }
   const isLate = (h: number) => h < 5 || h >= 22;
   const V = new Map<

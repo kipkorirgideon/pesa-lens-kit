@@ -1,6 +1,5 @@
 // Payee classification (port of reference/python/bars.py) and small shared helpers.
 import type { FbCategory } from './types';
-import { PROFILE } from '../profile';
 
 // Bars / lounges / clubs. "BAR" but not "MILK BAR"; "LOUNGE" but not a barber's ("KINYOZI").
 const BAR = /\bBAR\b(?!.*MILK)|LOUNGE(?!.*KINYOZI)|\bPUB\b|WINES?\b|LIQUOR|SPIRITS|\bCLUB\b|GARDENS|ROOFTOP|RESORT/i;
@@ -14,18 +13,32 @@ const NOT_FB = /KINYOZI|SUPERMARKET|SACCO|BANK|KITCHENWARE|TYRES/i;
 
 export const FB_CATS: FbCategory[] = ['Bars & lounges', 'Restaurants, hotels & food', 'Butcheries & nyama choma'];
 
+/** Case-insensitive, whitespace-collapsed prefix test on plain strings (an exact name is a prefix of itself). */
+const startsWithText = (name: string, text: string): boolean => {
+  const t = text.replace(/\s+/g, ' ').trim().toUpperCase();
+  return t !== '' && name.replace(/\s+/g, ' ').trim().toUpperCase().startsWith(t);
+};
+
+export interface ClassifyConfig {
+  /** Upper-cased payee names always classed as bars (exact match). */
+  extraBars?: Set<string>;
+  /** Plain-text names/prefixes classed as food (checked after bar and meat, like the built-in food keywords). */
+  extraFood?: readonly string[];
+}
+
 /** Classify a payee name (collapsed, trailing dots stripped). Bar wins over meat, meat over food. */
-export function classifyPayee(n: string, extraBars?: Set<string>): FbCategory | null {
-  if (extraBars && extraBars.has(n.toUpperCase())) return 'Bars & lounges';
+export function classifyPayee(n: string, cfg: ClassifyConfig = {}): FbCategory | null {
+  if (cfg.extraBars && cfg.extraBars.has(n.toUpperCase())) return 'Bars & lounges';
   if (NOT_FB.test(n)) return null;
-  if (BAR.test(n) || (PROFILE.extraBarPattern && PROFILE.extraBarPattern.test(n))) return 'Bars & lounges';
+  if (BAR.test(n)) return 'Bars & lounges';
   if (MEAT.test(n)) return 'Butcheries & nyama choma';
-  if (FOOD.test(n) || (PROFILE.extraFoodPattern && PROFILE.extraFoodPattern.test(n))) return 'Restaurants, hotels & food';
+  if (FOOD.test(n) || (cfg.extraFood ?? []).some((t) => startsWithText(n, t))) return 'Restaurants, hotels & food';
   return null;
 }
 
-/** Merge several tills of one venue into a single name (see src/profile.ts). */
-export const venueName = (n: string) => PROFILE.venueMerges.find((m) => m.match.test(n))?.name ?? n;
+/** Merge several tills of one venue into a single name (first matching rule wins; plain-text prefix, case-insensitive). */
+export const venueName = (n: string, merges: readonly { match: string; name: string }[] = []): string =>
+  merges.find((m) => startsWithText(n, m.match))?.name ?? n;
 
 /** Payee name as keyed in payee tables: whitespace collapsed, trailing dots removed. */
 export const payeeName = (raw: string) => raw.replace(/\s+/g, ' ').trim().replace(/\.+$/, '');

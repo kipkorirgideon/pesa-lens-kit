@@ -118,7 +118,7 @@ transaction code may appear in code, tests, fixtures, commit messages or PR desc
   **Out of scope.** Branch-protection settings in GitHub's UI, deploy automation beyond Vercel's
   default git integration, Lighthouse/bundle-size CI checks (TASK-6 sets the budget locally).
 
-- [ ] ## TASK-5 — Move `src/profile.ts` defaults into Settings and empty the profile
+- [x] ## TASK-5 — Move `src/profile.ts` defaults into Settings and empty the profile
       **Goal.** Remove the privacy risk that personal defaults ship in the public bundle, and make venue
       merges and extra bar/food patterns editable in the UI. Highest-value user-visible change; depends on
       TASK-3's tests because it touches `classify.ts` and `analyze.ts`.

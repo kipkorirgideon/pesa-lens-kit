@@ -1,11 +1,11 @@
 // Runs parse + analyze on the real backup (local file, never sent anywhere) and compares with reference/expected/*.json.
 // Usage: npx tsx scripts/verify.ts [path-to-backup]
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseBackup } from '../src/lib/parse';
 import { analyze } from '../src/lib/analyze';
-import { DEFAULT_SETTINGS } from '../src/lib/types';
+import { sanitizeSettings } from '../src/lib/settings';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BACKUP = process.argv.slice(2).find((x) => !x.startsWith('-')) ?? 'backups/sms.sms';
@@ -13,10 +13,15 @@ const TOL = 1; // KSh rounding tolerance
 type Row = Record<string, unknown>;
 const expected = (n: string): Row[] => JSON.parse(readFileSync(join(ROOT, 'reference/expected', n + '.json'), 'utf8')).rows;
 
+// Personal settings the golden data was generated with: git-ignored reference/settings.json (Settings shape), else empty defaults.
+const settingsPath = join(ROOT, 'reference/settings.json');
+const SETTINGS = sanitizeSettings(existsSync(settingsPath) ? JSON.parse(readFileSync(settingsPath, 'utf8')) : {});
+console.log(existsSync(settingsPath) ? 'settings: reference/settings.json' : 'settings: empty defaults (no reference/settings.json)');
+
 const t0 = Date.now();
 const pr = parseBackup(JSON.parse(readFileSync(BACKUP, 'utf8')));
 const t1 = Date.now();
-const a = analyze(pr, DEFAULT_SETTINGS);
+const a = analyze(pr, SETTINGS);
 const t2 = Date.now();
 
 function same(x: unknown, y: unknown): boolean {

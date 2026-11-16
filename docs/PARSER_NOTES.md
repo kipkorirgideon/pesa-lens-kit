@@ -20,3 +20,13 @@ numbers were typed in by hand:
 - **Payee display name** is the first spelling seen (as in biz100.py; agg.py used the last spelling seen).
 - **extraBars** matches payee names case-insensitively (a `type|name` key is also accepted). It overrides the non-food exclusion regex and feeds fb.*, drains.bars and bars_rising.
 - Python's half-to-even `round()` and `str.title()` are emulated (`pyRound`, `pyTitle` in `src/lib/classify.ts`), so the drain warning text matches character for character.
+
+## Personal settings for `verify` (TASK-5)
+
+The golden data was produced with personal classification values (excluded people, extra bar/food names, venue merges). These no longer live in `src/`. `scripts/verify.ts` reads them from the git-ignored `reference/settings.json`, which has the `Settings` shape and is passed through `sanitizeSettings`:
+
+```json
+{ "excludedPeople": [], "extraBars": [], "extraFood": [], "venueMerges": [{ "match": "text the name starts with", "name": "merged name" }] }
+```
+
+If the file is absent, empty defaults are used and sections that depended on personal values will differ from the golden data. Matching is plain text, case-insensitive, by prefix (an exact name is a prefix of itself); there is no RegExp support anywhere in settings. `extraBars` remains an exact (upper-cased) name match.
