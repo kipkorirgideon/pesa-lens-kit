@@ -19,7 +19,7 @@ new feature/project  ─▶ apex (plan)      ─▶ "Forge: start TASK-n"
 "Forge: address review on PR #n" ─▶ forge ─▶ "Apex: re-review PR #n"
 "Harbor: deploy PR #n" ─▶ harbor           ─▶ "Deployed PR #n → <url>"  then next task
 ```
-Handoff state lives in `.claude/handoff/review.md` (written by Apex, read by Harbor).
+Handoff state lives in `.claude/handoff/review.md` (written by Apex, read by Harbor). The `.claude/handoff/` directory is local-only and git-ignored; Apex regenerates it at each review, so a fresh clone will not contain it.
 
 **One task runs end to end, unattended.** Once a task starts, Forge builds it, Apex reviews **and merges** it in the same run, and Harbor deploys and verifies — with no pause for the user at any point inside the task. Never ask the user to approve a merge or a deploy mid-task.
 
@@ -32,8 +32,6 @@ Handoff state lives in `.claude/handoff/review.md` (written by Apex, read by Har
 **Deployment safety invariant** (not a checkpoint — enforce it automatically): no deployment may be publicly readable while `src/profile.ts` compiles personal data into the bundle. Harbor sets `ssoProtection: {"deploymentType":"all"}` and verifies unauthenticated access returns 302, every time. TASK-5 removes the underlying problem; until it lands, an unprotected URL is an incident to fix immediately and report, not a thing to leave up.
 
 Interrupt a task in progress only for: something no agent can do (`gh auth login`, `npx vercel login`, a Vercel dashboard-only setting), a product decision not answered by SPEC.md, a destructive or irreversible action outside the normal task loop, or a privacy incident. Everything else waits for the end-of-task report.
-
-**Do one task per run**: take it from Forge all the way through merge and deploy, then stop and wait for the user to green-light the next one. Never start the next task on the user's behalf.
 
 The repo starts with a working app (see `docs/STATUS.md`); the parser is verified against the original analysis (`docs/PARSER_NOTES.md`). Improve it — don't rewrite it. Ask the user only for things agents cannot do themselves: logging in (`gh auth login`, `npx vercel login`), confirming the Vercel project name, or a product decision that isn't in SPEC.md.
 
