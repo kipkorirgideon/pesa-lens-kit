@@ -66,11 +66,31 @@ describe('classifyPayee', () => {
   });
 
   it('extraBars wins even over an exclusion, and matches case-insensitively', () => {
-    const extra = new Set(['SAMPLE SACCO']);
+    const extra = ['SAMPLE SACCO'];
     expect(classifyPayee('SAMPLE SACCO')).toBeNull();
     expect(classifyPayee('SAMPLE SACCO', { extraBars: extra })).toBe(BARS);
     expect(classifyPayee('Sample Sacco', { extraBars: extra })).toBe(BARS);
-    expect(classifyPayee('SAMPLE HARDWARE', { extraBars: new Set(['SAMPLE HARDWARE']) })).toBe(BARS);
+    expect(classifyPayee('SAMPLE HARDWARE', { extraBars: ['SAMPLE HARDWARE'] })).toBe(BARS);
+  });
+
+  describe('extraBars prefix matching', () => {
+    it('an exact name still matches (a name is a prefix of itself)', () => {
+      expect(classifyPayee('Sample Hardware', { extraBars: ['Sample Hardware'] })).toBe(BARS);
+    });
+    it('a shorter entry captures its longer variants, ignoring case and extra whitespace', () => {
+      const extraBars = ['sample  hard'];
+      expect(classifyPayee('SAMPLE HARDWARE ANNEX', { extraBars })).toBe(BARS);
+      expect(classifyPayee('Sample Hardware 2', { extraBars })).toBe(BARS);
+    });
+    it('is prefix, not substring: an entry in the middle does not match', () => {
+      expect(classifyPayee('OTHER SAMPLE HARDWARE', { extraBars: ['SAMPLE HARDWARE'] })).toBeNull();
+    });
+    it('empty and whitespace-only entries are inert', () => {
+      expect(classifyPayee('SAMPLE HARDWARE', { extraBars: ['', '   ', '\t'] })).toBeNull();
+    });
+    it('still runs before NOT_FB', () => {
+      expect(classifyPayee('SAMPLE SACCO LTD', { extraBars: ['SAMPLE SACCO'] })).toBe(BARS);
+    });
   });
 });
 

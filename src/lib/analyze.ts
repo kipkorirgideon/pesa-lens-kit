@@ -93,7 +93,8 @@ const plural = (n: number, w: string) => `${intComma(n)} ${w}${n === 1 ? '' : 's
 
 export function analyze(pr: ParseResult, settings: Settings): Analysis {
   const excluded = new Set(settings.excludedPeople.map(personKey));
-  const extraBars = new Set(settings.extraBars.map((s) => payeeName(s.replace(/^(Paybill|Till \/ Buy Goods)\|/, '')).toUpperCase()));
+  // Strip the optional `type|` key prefix; matching (case, whitespace, prefix) is done by classifyPayee.
+  const extraBars = settings.extraBars.map((s) => payeeName(s.replace(/^(Paybill|Till \/ Buy Goods)\|/, '')));
   const tx: T[] = pr.txns.map((x) => {
     const t = Math.floor(x.ts / 1000) * 1000;
     return { ...x, t, p: parts(t), night: parts(t - 5 * 3600e3) };

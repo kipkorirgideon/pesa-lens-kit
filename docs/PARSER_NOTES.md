@@ -29,7 +29,7 @@ The golden data was produced with personal classification values (excluded peopl
 { "excludedPeople": [], "extraBars": [], "extraFood": [], "venueMerges": [{ "match": "text the name starts with", "name": "merged name" }] }
 ```
 
-If the file is absent, empty defaults are used and sections that depended on personal values will differ from the golden data. Matching is plain text, case-insensitive, by prefix (an exact name is a prefix of itself); there is no RegExp support anywhere in settings. `extraBars` remains an exact (upper-cased) name match.
+If the file is absent, empty defaults are used and sections that depended on personal values will differ from the golden data. Matching is plain text, case-insensitive, by prefix (an exact name is a prefix of itself); there is no RegExp support anywhere in settings.
 
 ## Removing the hard-coded `extraBarPattern` (TASK-5, recorded under TASK-28)
 
@@ -37,7 +37,7 @@ Before TASK-5, `src/profile.ts` carried a hard-coded regex (`PROFILE.extraBarPat
 
 When `reference/settings.json` held *partial* names (which an exact lookup cannot match), several `verify` sections moved: the food-and-bars sections, `drain_bars` and one `flags` value, all showing fewer bar payments and venues than the baseline. With every payee spelling listed exactly, `verify` passed. The measured figures are in `reference/MEASUREMENTS.md`, which is local-only (git-ignored, absent from a fresh clone, like `.claude/handoff/`).
 
-Practical consequence: one venue with several till spellings must currently be added once per spelling. TASK-17 (prefix matching for `extraBars`) would remove that. It is not a regression in `extraBars` semantics.
+Practical consequence at the time: one venue with several till spellings had to be added once per spelling. TASK-17 removed that: `extraBars` now matches by case-insensitive, whitespace-collapsed prefix like `extraFood` and `venueMerges` (same `startsWithText` helper; the `Paybill|` / `Till / Buy Goods|` key prefix is still stripped in `analyze.ts` before matching). It is prefix, not substring: an entry that appears only in the middle of a name does not match. `excludedPeople` stays exact.
 
 ## MILK BAR classification (TASK-14)
 

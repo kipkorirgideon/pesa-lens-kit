@@ -515,7 +515,7 @@ golden data will expose, so settle them *before* interpreting a verify failure a
   strings; (3) also rewrite git history (`git filter-repo`) and force-push, which invalidates every
   existing clone and PR reference. Only the repo owner can decide and perform (2) and (3).
 
-- [ ] ## TASK-17 — Make `extraBars` prefix-matching, consistent with `extraFood` and `venueMerges`
+- [x] ## TASK-17 — Make `extraBars` prefix-matching, consistent with `extraFood` and `venueMerges`
       **Goal.** Remove the last asymmetry in settings matching: `extraFood` and `venueMerges` match by
       case-insensitive prefix, `extraBars` still requires an exact upper-cased name, so one venue with
       several till spellings must be listed once per spelling.

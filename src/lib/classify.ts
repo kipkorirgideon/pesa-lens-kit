@@ -26,15 +26,15 @@ const startsWithText = (name: string, text: string): boolean => {
 };
 
 export interface ClassifyConfig {
-  /** Upper-cased payee names always classed as bars (exact match). */
-  extraBars?: Set<string>;
+  /** Plain-text names/prefixes always classed as bars (checked first, before the NOT_FB exclusion). */
+  extraBars?: readonly string[];
   /** Plain-text names/prefixes classed as food (checked after bar and meat, like the built-in food keywords). */
   extraFood?: readonly string[];
 }
 
 /** Classify a payee name (collapsed, trailing dots stripped). Bar wins over meat, meat over food. */
 export function classifyPayee(n: string, cfg: ClassifyConfig = {}): FbCategory | null {
-  if (cfg.extraBars && cfg.extraBars.has(n.toUpperCase())) return 'Bars & lounges';
+  if ((cfg.extraBars ?? []).some((t) => startsWithText(n, t))) return 'Bars & lounges';
   if (NOT_FB.test(n)) return null;
   if (isBar(n)) return 'Bars & lounges';
   if (MEAT.test(n)) return 'Butcheries & nyama choma';

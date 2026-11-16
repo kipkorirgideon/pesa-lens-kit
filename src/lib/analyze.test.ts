@@ -231,6 +231,14 @@ describe('analyze: settings (excluded people)', () => {
       expect(a.fb.summary).toMatchObject({ payments: 1, bars: 700 });
     }
   });
+  it('extraBars prefix works through the type| key form, and a mid-name entry does not match', () => {
+    const r2 = parseResult([
+      txn('till', nairobi(2026, 4, 25, 20), 700, { name: 'Sample Hardware Annex' }),
+      txn('till', nairobi(2026, 4, 26, 20), 300, { name: 'Other Sample Hardware' }),
+    ]);
+    const a = analyze(r2, { ...NONE, extraBars: ['Paybill|sample  hard'] });
+    expect(a.fb.summary).toMatchObject({ payments: 1, bars: 700 });
+  });
 });
 
 describe('analyze: settings (extraFood, venueMerges)', () => {
