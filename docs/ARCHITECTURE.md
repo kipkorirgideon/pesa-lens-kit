@@ -59,7 +59,7 @@ the whole list.
   we use, and keeping it leaves the emitted bundle byte-identical. It is a floor, so raising it later
   is a deliberate edit. Single source of truth: `browserslist` in `package.json` (read by
   `eslint-plugin-compat`) and `BUILD_TARGET` in `vite.config.ts` (read by esbuild) must list the same
-  engines; `src/lib/browserTarget.test.ts` fails if they drift. _Rule:_ syntax or APIs newer than the
+  engines; `src/lib/browserTarget.test.ts` fails if they drift (it also pins `ios_saf` to the Safari floor and the ES level to the tsconfig `target`; its header lists what it does not cover). _Rule:_ syntax or APIs newer than the
   floor (regex lookbehind, `structuredClone`, `Object.hasOwn`, `Array.prototype.at`, ...) are banned in
   `src/`. _Enforcement:_ (1) `eslint-plugin-compat` in `npm run lint` flags unsupported APIs and, as
   verified, lookbehind; (2) a `no-restricted-syntax` rule flags lookbehind regex literals explicitly, so
