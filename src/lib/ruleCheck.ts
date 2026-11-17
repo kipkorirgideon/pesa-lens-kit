@@ -1,8 +1,8 @@
 /**
  * Informational detection of Settings rules that can never change a result. Pure; never alters settings.
- * Normalisation mirrors the engine's prefix matcher in classify.ts: whitespace collapsed, case-insensitive.
+ * Normalisation is the engine's own `normText` from classify.ts (one implementation, so they cannot drift).
  */
-const norm = (s: string): string => s.replace(/\s+/g, ' ').trim().toUpperCase();
+import { normText as norm } from './classify';
 
 export interface RuleNote {
   /** Index of the flagged rule in its list. */

@@ -929,7 +929,7 @@ downloading charting code they do not render.
   - `npm run verify` prints the skipped non-M-PESA count on its own line after the headline, and the
     headline format is unchanged.
 
-- [ ] ## TASK-36 — Renumber `.claude/agents/apex.md` section 3 and keep one authoritative gate list _(Forge; agent definition)_
+- [x] ## TASK-36 — Renumber `.claude/agents/apex.md` section 3 and keep one authoritative gate list _(Forge; agent definition)_
   **Why.** Section 3 is numbered 1, 2, 3, 2, 3, 4, 5, 6. The second item "2." restates the pre-merge gate
   re-check with a **weaker list than item 1's**: it omits `prettier --check` and `npm run verify`. A future
   Apex could follow the weaker list and merge a parser change without the verify gate.
@@ -945,7 +945,7 @@ downloading charting code they do not render.
   of any kind from the diff, fixtures, commit messages and PR body; measured figures live only in
   git-ignored `reference/`.
 
-- [ ] ## TASK-38 — Close the browser-floor drift test blind spot _(Forge)_
+- [x] ## TASK-38 — Close the browser-floor drift test blind spot _(Forge)_
   **Why.** `src/lib/browserTarget.test.ts` only compares `chrome|edge|firefox|safari`, so a lone change to
   `ios_saf >= 14` in `browserslist` would not fail it. esbuild has no iOS target to compare against, and
   `es2020` has no second source either.
@@ -958,3 +958,10 @@ downloading charting code they do not render.
   gap between what the project now claims to support and what it renders.
   **Acceptance.** Either raise the floor's Safari/iOS minimum to 14.1 (browserslist, `BUILD_TARGET`,
   ADR-009, drift test) or accept and document the 14.0 degradation in ADR-009.
+
+- [x] ## TASK-40 — One shared text normaliser for the engine and the Settings rule checker _(Forge)_
+  **Why.** Found in the PR #30 review: `ruleCheck.ts` carried a character-for-character copy of the
+  normalisation in `classify.ts`'s `startsWithText`; nothing caught drift, so Settings could flag working
+  rules or miss dead ones.
+  **Done.** `classify.ts` exports `normText`; `startsWithText` and `ruleCheck.ts` both use it. The Settings
+  test now asserts the `role="status"` region exists, empty, before any note is added.

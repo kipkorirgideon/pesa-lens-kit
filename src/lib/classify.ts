@@ -19,10 +19,13 @@ const NOT_FB = /KINYOZI|SUPERMARKET|SACCO|BANK|KITCHENWARE|TYRES/i;
 
 export const FB_CATS: FbCategory[] = ['Bars & lounges', 'Restaurants, hotels & food', 'Butcheries & nyama choma'];
 
+/** The one text normalisation for plain-text rules: whitespace collapsed, trimmed, upper-cased. Also used by ruleCheck. */
+export const normText = (s: string): string => s.replace(/\s+/g, ' ').trim().toUpperCase();
+
 /** Case-insensitive, whitespace-collapsed prefix test on plain strings (an exact name is a prefix of itself). */
 const startsWithText = (name: string, text: string): boolean => {
-  const t = text.replace(/\s+/g, ' ').trim().toUpperCase();
-  return t !== '' && name.replace(/\s+/g, ' ').trim().toUpperCase().startsWith(t);
+  const t = normText(text);
+  return t !== '' && normText(name).startsWith(t);
 };
 
 export interface ClassifyConfig {

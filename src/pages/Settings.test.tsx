@@ -82,6 +82,13 @@ describe('Settings page', () => {
       fireEvent.change(barsInput, { target: { value: v } });
       fireEvent.click(screen.getByRole('button', { name: new RegExp(`Add “${v}” as typed`) }));
     };
+    // The status region must already be mounted before any note exists, or the first note is not announced.
+    const regionsBefore = screen.getAllByTestId('rule-notes');
+    expect(regionsBefore.length).toBeGreaterThan(0);
+    regionsBefore.forEach((r) => {
+      expect(r.getAttribute('role')).toBe('status');
+      expect(r.textContent).not.toContain('redundant'); // the merge region may already hold its seeded note
+    });
     addBar('zed corn');
     addBar('Other Place');
     expect(screen.queryByText(/redundant/)).toBeNull();
@@ -89,7 +96,9 @@ describe('Settings page', () => {
     expect(latest.extraBars).toEqual(['zed corn', 'Other Place', 'ZED CORN']);
     expect(screen.getByText(/“ZED CORN” is redundant: it is the same as “zed corn”/)).toBeTruthy();
     // Announced: notes live inside a status region that exists before any note does.
-    expect(screen.getAllByRole('status').some((r) => r.textContent?.includes('redundant'))).toBe(true);
+    expect(screen.getAllByTestId('rule-notes').some((r) => r.textContent?.includes('redundant'))).toBe(true);
+    // Same DOM nodes as before: the region was not remounted when the note appeared.
+    expect(screen.getAllByTestId('rule-notes')).toEqual(regionsBefore);
   });
 
   it('ignores a venue merge that duplicates an existing match+name pair', () => {

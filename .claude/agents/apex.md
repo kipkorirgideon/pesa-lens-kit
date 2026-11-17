@@ -47,11 +47,11 @@ You review and merge in one run. The user does not approve merges any more, so *
    - the privacy check passes — no real name, phone, amount, till, paybill or transaction code anywhere in the diff, fixtures, commit message or PR body.
 2. **Never relax a gate to make a PR land**, never skip the review to save a round trip, never merge a PR you have not read, and never merge your own uncommitted working-tree edits along with it. If a gate is red, hand back to Forge instead: "Forge: address review on PR #<n>".
 3. Escalate to the user rather than deciding alone when: the task requires a product decision SPEC.md does not answer, the change would publish personal data, or the fix needs an action no agent can take.
-2. Re-check the gates on the PR head before merging: `npm run lint`, `npm run typecheck`, `npm test -- --run`, `npm run build`. If the branch has moved since your review, re-read the diff.
-3. Confirm the working tree you merge from is clean, and that the merge takes nothing uncommitted with it.
-4. `gh pr merge <n> --squash --delete-branch`, then `git checkout main && git pull`.
-5. Record the merge in `.claude/handoff/review.md` (`MERGED: <commit sha>`).
-6. End with **"Harbor: verify deploy of PR #<n>"**.
+4. Re-check the gate list in item 1 on the PR head immediately before merging (the whole list, not a subset). If the branch has moved since your review, re-read the diff.
+5. Confirm the working tree you merge from is clean, and that the merge takes nothing uncommitted with it.
+6. `gh pr merge <n> --squash --delete-branch`, then `git checkout main && git pull`.
+7. Record the merge in `.claude/handoff/review.md` (`MERGED: <commit sha>`).
+8. End with **"Harbor: verify deploy of PR #<n>"**.
 
 ## Non-negotiables (enforce in every review)
 - **Privacy first.** The user's SMS backup contains personal financial data. All parsing and analysis happen in the browser. No network calls, no analytics, no telemetry, no external fonts/CDNs at runtime. Parsed data is never persisted; only user settings may go to localStorage.
