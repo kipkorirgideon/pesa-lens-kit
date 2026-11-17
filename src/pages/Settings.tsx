@@ -4,6 +4,7 @@ import { DEFAULT_SETTINGS } from '../lib/types';
 import { ksh, normName, titleCase } from '../lib/format';
 import { PageTitle, Section } from '../components/ui';
 import { Picker } from '../components/Picker';
+import { checkExtraList, checkMerges, type RuleNote } from '../lib/ruleCheck';
 
 export default function SettingsPage() {
   const a = useAnalysis();
@@ -63,7 +64,7 @@ export default function SettingsPage() {
 
       <Section
         title="Extra bars"
-        subtitle="Tills or paybills that are really bars or lounges but weren’t recognised by name. They’ll count as bars in Bars & restaurants and the drains list. Pick one, or type text: anything starting with it (any capitalisation) counts as a bar. Plain text only, no patterns."
+        subtitle="Tills or paybills that are really bars or lounges but weren’t recognised by name. They’ll count as bars in Bars & restaurants and the drains list. Pick one, or type text. Any payee whose name starts with the text (any capitalisation) counts as a bar. A fragment from the middle of a name will not match. Plain text only, no patterns."
       >
         <Picker
           selected={settings.extraBars}
@@ -74,11 +75,12 @@ export default function SettingsPage() {
           labelFor={(v) => v}
           allowCustom
         />
+        <RuleNotes notes={checkExtraList(settings.extraBars)} />
       </Section>
 
       <Section
         title="Extra food venues"
-        subtitle="Tills or paybills that are really restaurants or food places but weren’t recognised by name. Pick one, or type text: anything starting with it (any capitalisation) counts as food. Plain text only, no patterns."
+        subtitle="Tills or paybills that are really restaurants or food places but weren’t recognised by name. Pick one, or type text. Any payee whose name starts with the text (any capitalisation) counts as food. A fragment from the middle of a name will not match. Plain text only, no patterns."
       >
         <Picker
           selected={settings.extraFood}
@@ -89,6 +91,7 @@ export default function SettingsPage() {
           labelFor={(v) => v}
           allowCustom
         />
+        <RuleNotes notes={checkExtraList(settings.extraFood)} />
       </Section>
 
       <Section
@@ -96,6 +99,7 @@ export default function SettingsPage() {
         subtitle="Combine several tills of one venue into a single name in Bars & restaurants. Any payee whose name starts with the text (any capitalisation) is shown under the merged name. The first matching rule wins."
       >
         <MergeEditor merges={settings.venueMerges} onChange={(venueMerges) => setSettings({ ...settings, venueMerges })} />
+        <RuleNotes notes={checkMerges(settings.venueMerges)} />
       </Section>
 
       <div className="border-t border-gray-200 pt-4">
@@ -176,6 +180,27 @@ function MergeEditor({
           Add merge
         </button>
       </form>
+    </div>
+  );
+}
+
+/**
+ * Informational notes about rules that never change a result. The `role="status"` container is always rendered, so
+ * a note added later is announced politely; the glyph is decorative and the word "Note" carries the meaning.
+ */
+function RuleNotes({ notes }: { notes: RuleNote[] }) {
+  return (
+    <div role="status" data-testid="rule-notes">
+      {notes.length > 0 && (
+        <ul className="space-y-1 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          {notes.map((n) => (
+            <li key={`${n.kind}|${n.index}`}>
+              <span aria-hidden="true">⚠ </span>
+              <strong>Note:</strong> {n.message} Nothing was changed; remove it if you do not need it.
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
