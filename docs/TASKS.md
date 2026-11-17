@@ -886,7 +886,7 @@ downloading charting code they do not render.
 
   **Out of scope.** Any change to matching semantics, and substring/"contains" matching (ruled out).
 
-- [ ] ## TASK-32 — Align the Extra bars / Extra food subtitles with the Venue-merges wording _(Forge)_
+- [x] ## TASK-32 — Align the Extra bars / Extra food subtitles with the Venue-merges wording _(Forge)_
       **Why.** Found in the PR #24 review. The Venue-merges subtitle says plainly that a payee matches when
       its **name starts with** the text; the Extra bars and Extra food venues subtitles are less clear, so a
       fragment from the middle of a payee name silently never matches and nothing explains why.
@@ -900,7 +900,7 @@ downloading charting code they do not render.
 
   **Out of scope.** Substring matching (ruled out), any engine change.
 
-- [ ] ## TASK-33 — Surface unreachable or redundant Settings rules _(Forge)_
+- [x] ## TASK-33 — Surface unreachable or redundant Settings rules _(Forge)_
       **Why.** Found in the PR #24 review. Under first-match-wins, a `venueMerges` entry whose `match` prefix
       is preceded by an earlier, shorter prefix of it can never fire, and `extraBars` / `extraFood` can hold
       case-variant duplicates. Both are silent today.

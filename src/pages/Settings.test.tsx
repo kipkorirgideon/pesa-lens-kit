@@ -53,12 +53,43 @@ describe('Settings page', () => {
     expect(analyze(parse, latest).fb.summary).toMatchObject({ payments: 2, bars: 1300 });
   });
 
-  it('subtitles for bars and food both state the starts-with rule and do not promise substring matching', () => {
+  it('subtitles for bars and food use the identical starts-with wording and do not promise substring matching', () => {
     render(<Harness />);
-    const rule = 'anything starting with it (any capitalisation) counts as';
-    expect(screen.getByText((t) => t.includes(`${rule} a bar. Plain text only, no patterns`))).toBeTruthy();
-    expect(screen.getByText((t) => t.includes(`${rule} food. Plain text only, no patterns`))).toBeTruthy();
+    const rule = 'Any payee whose name starts with the text (any capitalisation) counts as';
+    const tail = 'A fragment from the middle of a name will not match. Plain text only, no patterns.';
+    expect(screen.getByText((t) => t.includes(`${rule} a bar. ${tail}`))).toBeTruthy();
+    expect(screen.getByText((t) => t.includes(`${rule} food. ${tail}`))).toBeTruthy();
+    expect(screen.getByText((t) => t.includes('Any payee whose name starts with the text (any capitalisation) is shown'))).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/contains|anywhere in|substring/i);
+  });
+
+  it('flags a shadowed venue merge, a case-variant duplicate, and nothing for distinct rules', () => {
+    render(<Harness />);
+    const merge = (m: string, n: string) => {
+      fireEvent.change(screen.getByLabelText('Name starts with'), { target: { value: m } });
+      fireEvent.change(screen.getByLabelText('Show as'), { target: { value: n } });
+      fireEvent.click(screen.getByRole('button', { name: 'Add merge' }));
+    };
+    merge('Zed', 'Zed');
+    merge('Quux', 'Quux');
+    expect(screen.queryByText(/Unreachable/)).toBeNull();
+    merge('Zed Corner', 'Zed Corner');
+    expect(screen.getByText(/Unreachable: an earlier rule starting with “Zed” already matches/)).toBeTruthy();
+    expect(latest.venueMerges).toHaveLength(3);
+
+    const [barsInput] = screen.getAllByPlaceholderText('Search or type a venue name…');
+    const addBar = (v: string) => {
+      fireEvent.change(barsInput, { target: { value: v } });
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(`Add “${v}” as typed`) }));
+    };
+    addBar('zed corn');
+    addBar('Other Place');
+    expect(screen.queryByText(/redundant/)).toBeNull();
+    addBar('ZED CORN');
+    expect(latest.extraBars).toEqual(['zed corn', 'Other Place', 'ZED CORN']);
+    expect(screen.getByText(/“ZED CORN” is redundant: it is the same as “zed corn”/)).toBeTruthy();
+    // Announced: notes live inside a status region that exists before any note does.
+    expect(screen.getAllByRole('status').some((r) => r.textContent?.includes('redundant'))).toBe(true);
   });
 
   it('ignores a venue merge that duplicates an existing match+name pair', () => {
