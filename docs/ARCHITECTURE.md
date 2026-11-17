@@ -48,7 +48,7 @@ the whole list.
 - **ADR-007: Vitest over Jest.** Shares the Vite transform; no separate babel/ts-jest config.
 - **ADR-008: Web Worker with a main-thread fallback** rather than worker-only, so an environment
   without `Worker` (or where worker construction throws) still parses, just with a frozen frame.
-- **ADR-009: Explicit browser floor: Chrome 87, Edge 88, Firefox 78, Safari / iOS Safari 14, ES2020.**
+- **ADR-009: Explicit browser floor: Chrome 87, Edge 88, Firefox 78, Safari / iOS Safari 14.1, ES2020.**
   _Incident:_ the first TASK-14 attempt used a regex lookbehind in `classify.ts`, which ships to the
   browser. Safari < 16.4 cannot parse it, so it would have been a blank app on older iPhones. Every gate
   passed (lint, typecheck, tests, build, prettier, both CI jobs) because Node and headless Chromium
@@ -68,6 +68,13 @@ the whole list.
   defence-in-depth for what lint cannot see: a dependency shipping a lookbehind, or a `new RegExp`
   built from a string. Named groups `(?<name>` are valid on the floor and are not flagged. Lint
   does not run on `dist/` and the dist check does not know APIs, so neither subsumes the other.
+  _Amendment (TASK-39): Safari / iOS minimum raised from 14 to 14.1, a correctness fix and not a routine
+  bump._ Safari 14.0 has no flex `gap`, so every Tailwind `gap-*` utility collapses to no spacing there, and
+  SPEC.md's 400 px layout requirement was not actually met on a browser the project formally claimed to
+  support. Declaring support we do not deliver is worse than narrowing the floor. 14.1 shipped April 2021;
+  PesaLens is a single-user private dashboard with no obligation to the seven-month window of 14.0.
+  `browserslist`, `BUILD_TARGET` (`safari14.1`) and the drift test move together; the test's version
+  pattern accepts decimals so the `ios_saf` pin keeps checking at 14.1. The emitted bundle and CSS are byte-identical to the 14.0 build (Autoprefixer adds nothing for 14.1 that it did not for 14.0); the raise changes the declared contract, not the output. Caveat: caniuse buckets iOS Safari 14.0-14.4 as one entry, so `ios_saf >= 14.1` still resolves to that whole bucket in `browserslist`; 14.1 is the closest floor expressible there, and iOS 14.0 is excluded only by declaration.
 
 ---
 

@@ -97,8 +97,8 @@ describe('Settings page', () => {
     expect(screen.getByText(/“ZED CORN” is redundant: it is the same as “zed corn”/)).toBeTruthy();
     // Announced: notes live inside a status region that exists before any note does.
     expect(screen.getAllByTestId('rule-notes').some((r) => r.textContent?.includes('redundant'))).toBe(true);
-    // Same DOM nodes as before: the region was not remounted when the note appeared.
-    expect(screen.getAllByTestId('rule-notes')).toEqual(regionsBefore);
+    // Same DOM nodes as before: the region was not remounted when the note appeared. (toBe: toEqual is structural and cannot see a remount).
+    screen.getAllByTestId('rule-notes').forEach((r, i) => expect(r).toBe(regionsBefore[i]));
   });
 
   it('ignores a venue merge that duplicates an existing match+name pair', () => {
