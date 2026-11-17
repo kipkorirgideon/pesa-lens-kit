@@ -952,7 +952,7 @@ downloading charting code they do not render.
   **Acceptance.** Either extend the test to cover `ios_saf` (e.g. assert it equals the Safari floor) and
   the ES level, or document in the test and ADR-009 exactly what the test does not cover.
 
-- [ ] ## TASK-39 — Reconcile the declared Safari floor with flex `gap` support _(Forge; product decision for Apex)_
+- [x] ## TASK-39 — Reconcile the declared Safari floor with flex `gap` support _(Forge; product decision for Apex)_
   **Why.** Safari 14.0 does not support `gap` on flex containers (14.1 does), so Tailwind `gap-*`
   utilities degrade to no spacing on 14.0. Pre-existing on `main`, not introduced by TASK-29, but it is a
   gap between what the project now claims to support and what it renders.

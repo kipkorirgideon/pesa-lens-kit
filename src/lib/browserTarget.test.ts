@@ -8,18 +8,18 @@ import { BUILD_TARGET } from '../../vite.config';
  *
  * Coverage, exactly:
  *  - chrome / edge / firefox / safari: browserslist == BUILD_TARGET (esbuild has these targets).
- *  - ios_saf: esbuild has no iOS target, so it is pinned to the Safari floor instead (iOS Safari 14 == Safari 14).
+ *  - ios_saf: esbuild has no iOS target, so it is pinned to the Safari floor instead (iOS Safari 14.1 == Safari 14.1).
  *  - ES level: BUILD_TARGET's `esNNNN` == tsconfig `compilerOptions.target`.
  * NOT covered: eslint-plugin-compat only reads browserslist, so an API-level change there is untested beyond
  * these equalities; and `lib` in tsconfig (which types the available APIs) is not compared.
  * If you edit `browserslist`, `BUILD_TARGET` or tsconfig `target`, change all of them together.
  */
-const versionOf = (query: string): string | null => /^[a-z_]+ >= (\d+)$/.exec(query)?.[1] ?? null;
+const versionOf = (query: string): string | null => /^[a-z_]+ >= (\d+(?:\.\d+)?)$/.exec(query)?.[1] ?? null;
 
 describe('browser target', () => {
   it('browserslist and build.target agree on every engine floor', () => {
     const fromList = pkg.browserslist
-      .map((q) => /^(chrome|edge|firefox|safari) >= (\d+)$/.exec(q))
+      .map((q) => /^(chrome|edge|firefox|safari) >= (\d+(?:\.\d+)?)$/.exec(q))
       .filter((m): m is RegExpExecArray => m !== null)
       .map((m) => `${m[1]}${m[2]}`)
       .sort();
